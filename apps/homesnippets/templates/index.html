@@ -1,0 +1,52 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Minefield Start Page</title>
+
+    <link rel="icon" type="image/png" id="favicon" href="chrome://branding/content/icon16.png" />
+    <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}aboutHome.css" />
+
+    <script type="text/javascript;version=1.8" src="{{ MEDIA_URL }}main.js"></script>
+    <script type="text/javascript;version=1.8">
+        Mozilla_Home_Main.setSnippetUpdateUrl(
+            '{{ request.build_absolute_uri }}1/Firefox/4.0b8pre/20101010030401/Darwin_Universal-gcc3/en-US/nightly/Darwin 10.4.0/default/default/'
+        )
+    </script>
+    <script type="text/javascript;version=1.8" src="{{ MEDIA_URL }}aboutHome.js"></script>
+</head>
+
+  <body dir="ltr" onload="onLoad(event)">
+    <div id="pageContainer">
+      <div id="topSection">
+        <div id="brandStart">
+          <span>Minefield</span> Start
+        </div>
+        <div id="searchContainer">
+          <img id="searchEngineLogo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAAYCAMAAABwdHsxAAADAFBMVEVogZYwjM9NtOspS2u0KAfYZBb3rRTiurCMjYrUWhIaPlzDNgfVRgjaVgvoizTI9f2ta17/9Wzrs0v46M/+7VOW6vrJQAsBLochdr+nmF/++o+UDQK88vzaYQarq6scarXT+f68vLzjdRrjewp5d3WqGATkUwaTq9uk7PnUaydkICTJSBD4uCDgZAz9+LiK6PjRZFH33Xv01qbrlxznhgvwx5gCBCbOUhLjfCzhaxHztXG8RhX93UP5yTRGl9QhRGT5wigkRmXniRj70zoKWrT2yUdqjs3UhzXvl0JwU0teu+EBElGD2fH83FZo1vTPilT0vDmd0Z3dbhrWrHLhcQir8PzTTDfPrVGrajv03cf5+vkwUG6z8PrSUw571uzvpCGPTzBsPDMxMEcHagXrkg7voBHf/P8FGHHhzrbyryOQZAeDNCudnZyTJBL2zlT+xByoUCG1wspyY1nRiH7STA3yiB7Jjx/pqT/Pz8/7lhDvfBxTUkl95PY/RE0DI2SQbT7LzJjxdg1OMTzutynnm2v+5DWsNBX+/tVDqOa7tnX57OPGYSHysziEo5a3XBe3l3j+0SXCoaCsjTL++fMgQmLmxXdv0ezsv0ycQxf8p0X1hwrenDU/Tnj9//tkyNj3+fX89fDv22QXHEWQydee7/xEdKG84uRWi5bwaxyK3/L++/iU5PMWM2Q6GS7UXg81l9gmSGgXOVewsKO3x+ECK8h8x3j7/fs5bMBke6kuTmwoRV/SbArKeSrB1snY373x5aSIRz85YIvragDD5+lnorUvSWF80PCQr6o4KGKysrIeQmIgXJ1Vb4j///8+XXjs7ewaUZSutsKFkqY4T3IhXqgYSHtwiJwUNVLExcbk5eU4SGcrcLEsP1wPKV77+/vy8/NBkcBmrN+drLklNGIONHQ5WXVxyuk0VXHHz9dmxuonZahTrNqPobEcP19CVXMURIljzvE/odz29vYcP3VieZHo6OhCYHxOW29y2vNYwe79/f33+PnU2eExgcLX2Nje397NKLzjAAACjElEQVR42q2UMWvbQBTHPRgro6CDKIJOPQSeVH+CDuZ2E3BIVmNkBB5agTF0NYV00y7jdMji0XqxvNljAzmEPASrQ0Vwhk41tPZiC6l3OjmNXYeYujfo3nF3v/fe/+le5hX5HyOTzv1Of88bnXelq0q8C9NRHMcpFrHd3gPTD0qV17uisWeDqE269gyguU88pcrRDowNXrqYTt1/xkQwXi8mZ2Q/TO9vDNa2FVkJLUPocDsYDoe1lB6EURzZ4RrDThHi0RF7mRh+bFGirCEYCJnMLpzUase5XI2aZxhjKM6wS64YJlDZqWxAPEq6ztjFm01KEzGdTxGirgoNFpRfrU7IEg8IiQFoqRlmqYp0p4VGDEO8zB1sYoLyKJlFVCdxjotwntNpISJqYfjKMQKi1fDVvJlqg2G6gWmh98l8iuRoWL1O7Bc53b2TJoSFc88xquwKqig8SGyDFvxRMGyriEdDUF140+DR9HN6hGHOBJIsjinLpvHoV84EIPGCL/ClAzOiojzfKeejz9WX3H6ru98Td6GWaqOi3lbBQQsTlyzzOU1ajjimTgpUkxRDN7Uvtl1kmTGMgT5+28BcAAC/SBSJBl7mWS1kkwRVnpWvs8n1HP6nMswFQmJyp71+DK4mgZ0ssEarFsiyQe0sg9V03acnG2luClgcQx+DKaOyTwTjAUNiS5OKWFGwZbGYw5GsiqKYNI6erp8XTo7TGigAToecVSofjvrEzMuyPBIe9xvXux2MvXCZZroQhNU6a7/mJ5VsK87l+FaD2TLpTvTTbTbj7bb13PiJZ0zAT+u6PtH9nhuKxD270s0hGAfSBOCgaJLHxDrlffcQzOoXSKyYjksOwdDWOLcG2H5i8zf27La6kVLrqwAAAABJRU5ErkJggg==" alt="Google" />
+
+          <form name="searchForm" onsubmit="onSearchSubmit(event)">
+            <input type="text" name="searchText" value="" id="searchText" maxLength="256" />
+            <br />
+            <input type="submit" value="Search" />
+            <span id="searchEngineLinks">
+              <a id="searchEngineAdvancedLink" href="http://www.google.com/advanced_search">Advanced Search</a>
+              <a id="searchEngineAdvancedPreferences" href="http://www.google.com/preferences">Preferences</a>
+            </span>
+
+          </form>
+        </div>
+      </div>
+      <div id="defaultSnippets">
+        <span>Thanks for choosing Firefox! To get the most out of your browser, learn more about the <a href="http://www.mozilla.com/firefox/4.0/features">latest features</a>.</span>
+        <span hidden="true">It's easy to customize your Firefox exactly the way you want it. <a>Choose from thousands of add-ons</a>.</span>
+
+      </div>
+      <div hidden="true" id="snippets"></div>
+      <div id="bottomSection">
+        <div id="aboutMozilla">
+          <a href="http://www.mozilla.com/about/">About Mozilla</a>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

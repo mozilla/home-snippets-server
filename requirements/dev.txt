@@ -1,0 +1,10 @@
+# Package requirements for development
+
+--requirement=prod.txt
+
+coverage
+nose
+
+-e git://github.com/cmheisel/nose-xcover.git#egg=nosexcover
+-e git://github.com/jbalogh/django-nose.git#egg=django_nose
+-e git+http://github.com/jbalogh/check.git#egg=check

@@ -1,0 +1,6 @@
+# Production package requirements
+
+--requirement=base.txt
+
+-e git://github.com/jbalogh/schematic.git#egg=schematic
+-e git://github.com/jbalogh/django-multidb-router.git#egg=django-multidb-router
