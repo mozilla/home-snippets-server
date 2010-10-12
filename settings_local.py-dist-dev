@@ -2,91 +2,77 @@
 from settings import *
 from os.path import abspath, dirname, join
 
-DEV = True
+DEV = True # Set to False for production
+
+SNIPPET_HTTP_MAX_AGE = 90
+
+#CACHE_BACKEND = 'file://%s/cache' % ( abspath(dirname(__file__)) )
+CACHE_BACKEND = 'locmem://'
+# CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+
+CACHE_MIDDLEWARE_SECONDS = 90
+
+SERVE_MEDIA = DEV
+DEBUG = DEV
+TEMPLATE_DEBUG = DEBUG
+EMAIL_DEBUG = DEBUG
 
 ADMINS += [
     ('l.m.orchard', 'lorchard@mozilla.com'),
 ]
+MANAGERS = ADMINS
 
-if not DEV:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "homesnippets",
-            "USER": "homesnippets",
-            "PASSWORD": "homesnippets",
-            "HOST": "127.0.0.1",
-            "PORT": "3306",
-        },
-        "shadow-1": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "homesnippets",
-            "USER": "homesnippets",
-            "PASSWORD": "homesnippets",
-            "HOST": "127.0.0.1",
-            "PORT": "3306",
-        },
-        # "shadow-2"
+TIME_ZONE = 'America/Detroit'
+
+INSTALLED_APPS = INSTALLED_APPS + (
+    "django_nose",
+)
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#DATABASE_ROUTERS = ('multidb.MasterSlaveRouter',)
+
+"""
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "homesnippets",
+        "USER": "homesnippets",
+        "PASSWORD": "homesnippets",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    },
+    "shadow-1": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "homesnippets",
+        "USER": "homesnippets",
+        "PASSWORD": "homesnippets",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    },
+    # "shadow-2"
+}
+"""
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "dev.db",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",
+        "PORT": "",
+    },
+    "shadow-1": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "dev.db",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",
+        "PORT": "",
     }
+}
+SLAVE_DATABASES = ['shadow-1',] # 'shadow-2']
 
-else:
-    SERVE_MEDIA = DEV
-    DEBUG = DEV
-    TEMPLATE_DEBUG = DEBUG
-    EMAIL_DEBUG = DEBUG
-
-    TIME_ZONE = 'America/Detroit'
-
-    INSTALLED_APPS = INSTALLED_APPS + (
-        "django_nose",
-    )
-    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-    #DATABASE_ROUTERS = ('multidb.MasterSlaveRouter',)
-
-    """
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "homesnippets",
-            "USER": "homesnippets",
-            "PASSWORD": "homesnippets",
-            "HOST": "127.0.0.1",
-            "PORT": "3306",
-        },
-        "shadow-1": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "homesnippets",
-            "USER": "homesnippets",
-            "PASSWORD": "homesnippets",
-            "HOST": "127.0.0.1",
-            "PORT": "3306",
-        },
-        # "shadow-2"
-    }
-    """
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "dev.db",
-            "USER": "",
-            "PASSWORD": "",
-            "HOST": "",
-            "PORT": "",
-        },
-        "shadow-1": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "dev.db",
-            "USER": "",
-            "PASSWORD": "",
-            "HOST": "",
-            "PORT": "",
-        }
-    }
-    SLAVE_DATABASES = ['shadow-1',] # 'shadow-2']
-
-    import logging
-    logging.basicConfig(
-        level = logging.DEBUG,
-        format = '%(asctime)s %(levelname)s %(message)s',
-    )
-
+import logging
+logging.basicConfig(
+    level = logging.DEBUG,
+    format = '%(asctime)s %(levelname)s %(message)s',
+)
