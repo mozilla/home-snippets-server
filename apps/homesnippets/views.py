@@ -20,6 +20,7 @@ from homesnippets.models import Snippet
 
 
 HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
+DEBUG = getattr(settings, 'DEBUG', False)
 
 
 @cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
@@ -34,6 +35,18 @@ def view_snippets(request, **kwargs):
     out = [ ]
     for snippet in snippets:
         out.append('<div class="snippet">\n%s\n</div>' % snippet.body)
+
+    if DEBUG:
+        # HACK: This should probably be some sort of optional toolbar or
+        # bookmarklet given to QA / devs
+        from time import gmtime, strftime
+        time_now = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+        out.append("""<div class="snippet">
+            <hr /> 
+            <p><a href="javascript:void(function%20()%20%7BlocalStorage%5B'snippets-last-update'%5D%20%3D%200%3B%20localStorage%5B'snippets'%5D%20%3D%20null%3B%20window.location.reload()%7D())">Click here to make about:home load fresh snippets</a></p>
+            <p>Snippets last generated at: """ + time_now + """</p>
+            <hr /> 
+        </div>""")
 
     resp = HttpResponse("\n\n".join(out))
     resp['Access-Control-Allow-Origin'] = '*'
