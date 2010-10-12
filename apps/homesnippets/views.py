@@ -25,21 +25,6 @@ HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
 @cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
 @vary_on_headers('User-Agent', 'Cookie', 'Accept-Language')
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
-def index(request):
-    """Render the index page, simulating about:home"""
-    return render_to_response('index.html', {},
-            context_instance=RequestContext(request))
-
-
-#TODO: Maybe use this? Figure out lighterweight way to work out ETag value from args
-#def view_snippet_etag(request, **kwargs):
-#    return '8675309'
-
-
-@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
-@vary_on_headers('User-Agent', 'Cookie', 'Accept-Language')
-@cache_control(public=True, max_age=HTTP_MAX_AGE)
-#@http.condition(etag_func=view_snippet_etag)
 def view_snippets(request, **kwargs):
     """Fetch and render snippets matching URL segment args"""
     # browser/components/nsBrowserContentHandler.js:911:    const SNIPPETS_URL = "http://snippets.mozilla.com/" + STARTPAGE_VERSION + "/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/";
@@ -51,6 +36,13 @@ def view_snippets(request, **kwargs):
         out.append('<div class="snippet">\n%s\n</div>' % snippet.body)
 
     resp = HttpResponse("\n\n".join(out))
-
+    resp['Access-Control-Allow-Origin'] = '*'
     return resp
 
+@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
+@vary_on_headers('User-Agent', 'Cookie', 'Accept-Language')
+@cache_control(public=True, max_age=HTTP_MAX_AGE)
+def index(request):
+    """Render the index page, simulating about:home"""
+    return render_to_response('index.html', {},
+            context_instance=RequestContext(request))
