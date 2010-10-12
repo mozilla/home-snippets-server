@@ -3,7 +3,7 @@
 Firefox 4 has space for snippets of content on about:home - this is a content
 management app to serve and manage those snippets.
 
-See also: https://bugzilla.mozilla.org/show_bug.cgi?id=592431
+See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
 
 ## Development
 
