@@ -73,8 +73,22 @@ class ClientMatchRule(models.Model):
             mv = getattr(self, ak, None)
             if not mv: 
                 continue
-            if av != mv:
+            
+            if mv.startswith('/'):
+                # Regex match
+                import re
+                try:
+                    p = re.compile(mv[1:-1])
+                    if p.match(av) is None:
+                        is_match = False
+                except re.error:
+                    # TODO: log error? validate regex in form submit?
+                    is_match = False
+
+            elif av != mv:
+                # Exact match
                 is_match = False
+
         return is_match
 
 

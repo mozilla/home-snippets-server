@@ -40,41 +40,50 @@ class TestSnippetsMatch(TestCase):
 
         rules = self.setup_rules({
             'fields': ( 'startpage_version', 'name', 'version', 'locale', ),
-            'items': (
+            'items': {
                 # Specific rule, expected to be matched
-                ( '1', 'Firefox', '4.0', 'en-US', ),
+                'specific': ( '1', 'Firefox', '4.0', 'en-US', ),
                 # Less-specific rule, should match but not result in duplicate
-                ( '1', 'Firefox', '4.0', None, ),
+                'vague': ( '1', 'Firefox', '4.0', None, ),
                 # Rule that won't be attached to any snippet.
-                ( '1', 'Mudfish', '7.0', 'en-GB', ),
+                'unused': ( '1', 'Mudfish', '7.0', 'en-GB', ),
                 # Rule that will be attached to snippet, but not matched.
-                ( '2', 'Airdog',  '3.0', 'de' ),
+                'unmatched': ( '2', 'Airdog',  '3.0', 'de' ),
                 # Rule matching anything
-                ( None, None, None, None ),
-            )
+                'all': ( None, None, None, None ),
+            }
         })
 
         snippets = self.setup_snippets(rules, {
             'fields': ( 'name', 'body', 'rules' ),
-            'items': (
+            'items': {
                 # Using specific and less-specific rule
-                ( 'test 1', 'Expected body data', ( rules[0], rules[1] ) ),
+                'expected': ( 'test 1', 'Expected body data', 
+                    ( rules['specific'], rules['vague'] ) ),
                 # No rules, so always included in results
-                ( 'test 2', 'Ever-present body data', ( rules[4], ) ),
+                'ever': ( 'test 2', 'Ever-present body data', 
+                    ( rules['all'], ) ),
                 # Rule attached that will never be matched, so should never appear
-                (' test 3', 'Never-present body data', ( rules[3], ) ),
-            )
+                'never': (' test 3', 'Never-present body data', 
+                    ( rules['unmatched'], ) ),
+            }
         })
 
         self.assert_snippets({
             '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets[0], True  ), ( snippets[1], True  ), ( snippets[2], False ),
+                ( snippets['expected'], True  ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ),
             ),
             '/9/Waterduck/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets[0], False ), ( snippets[1], True  ), ( snippets[2], False ),
+                ( snippets['expected'], False ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ),
             ),
             '/1/Mudfish/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
-                ( snippets[0], False ), ( snippets[1], True  ), ( snippets[2], False ),
+                ( snippets['expected'], False ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ),
             ),
         })
 
@@ -83,67 +92,109 @@ class TestSnippetsMatch(TestCase):
 
         rules = self.setup_rules({
             'fields': ( 'startpage_version', 'name', 'version', 'locale', 'exclude' ),
-            'items': (
-                ( '1', 'Firefox', '4.0', 'en-US', True, ),
-                ( '1', 'Firefox', '4.0', None, False, ),
-                ( '1', 'Mudfish', '7.0', 'en-GB', True, ),
-                ( '2', 'Airdog',  '3.0', 'de', False, ),
-                ( '1', 'Windcat', '9.3', 'fr', True ),
-                ( None, None, None, None, False ),
-            )
+            'items': {
+                'specific': ( '1', 'Firefox', '4.0', 'en-US', True, ),
+                'vague': ( '1', 'Firefox', '4.0', None, False, ),
+                'mudfish': ( '1', 'Mudfish', '7.0', 'en-GB', True, ),
+                'airdog': ( '2', 'Airdog',  '3.0', 'de', False, ),
+                'nowindcat': ( '1', 'Windcat', '9.3', 'fr', True ),
+                'all': ( None, None, None, None, False ),
+            }
         })
 
         snippets = self.setup_snippets(rules, {
             'fields': ( 'name', 'body', 'rules' ),
-            'items': (
-                ( 'test 1', 'Expected in en-GB but not en-US', ( rules[0], rules[1] ) ),
-                ( 'test 2', 'Ever-present body data', ( rules[5], ) ),
-                (' test 3', 'Never-present body data', ( rules[3], ) ),
-                ( 'test 4', 'Usually-present body data', ( rules[5], rules[4], ) ),
-            )
+            'items': {
+                'en-GB': ( 'test 1', 'Expected in en-GB but not en-US', 
+                    ( rules['specific'], rules['vague'] ) ),
+                'ever': ( 'test 2', 'Ever-present body data', 
+                    ( rules['all'], ) ),
+                'never': (' test 3', 'Never-present body data', 
+                    ( rules['airdog'], ) ),
+                'usually': ( 'test 4', 'Usually-present body data', 
+                    ( rules['all'], rules['nowindcat'], ) ),
+            }
         })
 
         self.assert_snippets({
             '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets[0], False ), ( snippets[1], True  ), 
-                ( snippets[2], False ), ( snippets[3], True  ),
+                ( snippets['en-GB'], False ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ), 
+                ( snippets['usually'], True  ),
             ),
             '/1/Firefox/4.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
-                ( snippets[0], True  ), ( snippets[1], True  ), 
-                ( snippets[2], False ), ( snippets[3], True  ),
+                ( snippets['en-GB'], True  ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ), 
+                ( snippets['usually'], True  ),
             ),
             '/1/Windcat/9.3/xxx/xxx/fr/xxx/xxx/default/default/': (
-                ( snippets[0], False ), ( snippets[1], True  ), 
-                ( snippets[2], False ), ( snippets[3], False ),
+                ( snippets['en-GB'], False ), 
+                ( snippets['ever'], True  ), 
+                ( snippets['never'], False ), 
+                ( snippets['usually'], False ),
             ),
         })
 
-    @attr("current")
-    @attr("TODO")
     def test_regex_rules(self):
         """Exercise match rules that use regexes"""
-        ok_(False)
+
+        rules = self.setup_rules({
+            'fields': ( 'startpage_version', 'name', 'version', 'locale', 'exclude' ),
+            'items': {
+                'fire_or_mud': ( '1', '/(Firefox|Mudfish)/', '4.0', None, False, ),
+                'no_fr_or_de': ( '1', None, '4.0', '/(de|fr)/', True, ),
+                'all': ( None, None, None, None, False ),
+            }
+        })
+
+        snippets = self.setup_snippets(rules, {
+            'fields': ( 'name', 'body', 'rules' ),
+            'items': {
+                'fire_or_mud': ( 'Fire or Mud', 'Firefox or Mudfish but not Airdog', 
+                    ( rules['fire_or_mud'], rules['no_fr_or_de'], ) ),
+            }
+        })
+
+        self.assert_snippets({
+            '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                ( snippets['fire_or_mud'], True ), 
+            ),
+            '/1/Mudfish/4.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
+                ( snippets['fire_or_mud'], True  ), 
+            ),
+            '/1/Firefox/4.0/xxx/xxx/de/xxx/xxx/default/default/': (
+                ( snippets['fire_or_mud'], False  ), 
+            ),
+            '/1/Mudfish/4.0/xxx/xxx/fr/xxx/xxx/default/default/': (
+                ( snippets['fire_or_mud'], False  ), 
+            ),
+            '/1/Airdog/4.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
+                ( snippets['fire_or_mud'], False ), 
+            ),
+        })
+
+    #######################################################################
 
     def setup_rules(self, rules_data):
         """Given a data structure defining client match rules, create the 
         model items"""
-        rules = []
-        for item in rules_data['items']:
-            rule = ClientMatchRule(**dict(zip(rules_data['fields'], item)))
-            rule.save()
-            rules.append(rule)
+        rules = {}
+        for name, item in rules_data['items'].items():
+            rules[name] = ClientMatchRule(**dict(zip(rules_data['fields'], item)))
+            rules[name].save()
         return rules
 
     def setup_snippets(self, rules, snippets_data):
         """Given a data structure defining snippets, create the model items"""
-        snippets = []
-        for item_data in snippets_data['items']:
+        snippets = {}
+        for name, item_data in snippets_data['items'].items():
             item = dict(zip(snippets_data['fields'], item_data))
-            snippet = Snippet(name=item['name'], body=item['body'])
-            snippet.save()
-            snippets.append(snippet)
+            snippets[name] = Snippet(name=item['name'], body=item['body'])
+            snippets[name].save()
             for rule in item['rules']:
-                snippet.client_match_rules.add(rule)
+                snippets[name].client_match_rules.add(rule)
         return snippets
 
     def assert_snippets(self, tests):
