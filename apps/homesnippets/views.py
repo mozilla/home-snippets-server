@@ -28,13 +28,11 @@ DEBUG = getattr(settings, 'DEBUG', False)
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 def view_snippets(request, **kwargs):
     """Fetch and render snippets matching URL segment args"""
-    # browser/components/nsBrowserContentHandler.js:911:    const SNIPPETS_URL = "http://snippets.mozilla.com/" + STARTPAGE_VERSION + "/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%/%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/";
 
-    snippets = Snippet.objects.all()
-
-    out = [ ]
-    for snippet in snippets:
-        out.append('<div class="snippet">\n%s\n</div>' % snippet.body)
+    out = [ 
+        '<div class="snippet">\n%s\n</div>' % snippet.body
+        for snippet in Snippet.objects.filter_by_match_rules(kwargs)
+    ]
 
     if DEBUG:
         # HACK: This should probably be some sort of optional toolbar or
