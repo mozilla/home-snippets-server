@@ -23,7 +23,7 @@ HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
 DEBUG = getattr(settings, 'DEBUG', False)
 
 
-@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
+#@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
 @vary_on_headers('User-Agent', 'Cookie', 'Accept-Language')
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 def view_snippets(request, **kwargs):
@@ -50,7 +50,7 @@ def view_snippets(request, **kwargs):
     resp['Access-Control-Allow-Origin'] = '*'
     return resp
 
-@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
+#@cache_page(HTTP_MAX_AGE, key_prefix='homesnippets')
 @vary_on_headers('User-Agent', 'Cookie', 'Accept-Language')
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 def index(request):

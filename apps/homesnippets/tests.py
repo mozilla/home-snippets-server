@@ -2,6 +2,7 @@
 homesnippets app tests
 """
 import logging
+import time
 
 from django.conf import settings
 
@@ -12,7 +13,7 @@ from django.test import TestCase
 from django.test.client import Client
  
 from django.core.cache import cache
-
+from django.core.cache.backends import locmem
 
 from nose.tools import assert_equal, with_setup, assert_false, eq_, ok_
 from nose.plugins.attrib import attr
@@ -24,7 +25,9 @@ class TestSnippetsMatch(TestCase):
 
     def setUp(self):
         self.log = logging.getLogger('nose.homesnippets')
+
         self.browser = Client()
+
         settings.DEBUG = True
 
         ClientMatchRule.objects.all().delete()
@@ -86,6 +89,7 @@ class TestSnippetsMatch(TestCase):
                 ( snippets['never'], False ),
             ),
         })
+
 
     def test_exclusion_rules(self):
         """Exercise match rules that exclude snippets"""
