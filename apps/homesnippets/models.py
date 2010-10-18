@@ -65,9 +65,9 @@ class ClientMatchRule(models.Model):
 
     objects = ClientMatchRuleManager()
 
-    description = models.TextField(
+    description = models.CharField(
             _('description of the intent behind this rule'),
-            null=False, blank=False, default="None")
+            null=False, blank=False, default="None", max_length=200)
     exclude = models.BooleanField(
             _('exclusion rule?'),
             default=False)
@@ -159,7 +159,7 @@ post_save.connect(rule_update_lastmod, sender=ClientMatchRule)
 
 class SnippetManager(models.Manager):
 
-    def find_snippets_with_match_rules(self, args):
+    def find_snippets_with_match_rules(self, args, time_now=None):
         """Find snippets data using match rules. 
 
         Returned is a list of dicts with id and body of snippets found, rather
@@ -197,7 +197,9 @@ class SnippetManager(models.Manager):
                     FROM "homesnippets_snippet"
                     WHERE ( %s )
                 """
-                where = []
+                where = [
+                    '( "homesnippets_snippet"."disabled" <> 1 )',
+                ]
                 if include_ids:
                     where.append(""" 
                         "homesnippets_snippet"."id" IN (
@@ -216,30 +218,53 @@ class SnippetManager(models.Manager):
                     """ % ",".join(exclude_ids))
                 snippets = self.raw(sql % (' AND '.join(where))) 
 
-            snippet_dicts = [ dict(id=snippet.id, body=snippet.body)
-                    for snippet in snippets ]
-            cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippet_dicts)
+            snippet_data = [ 
+                dict(
+                    id=snippet.id, 
+                    body=snippet.body,
+                    pub_start=snippet.pub_start,
+                    pub_end=snippet.pub_end,
+                )
+                for snippet in snippets 
+            ]
+            cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippet_data)
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 
-        return cache_hit[2]
+        snippets_data = cache_hit[2]
+
+        return snippets_data
 
 
 class Snippet(models.Model):
 
     class Meta():
-        ordering = ( '-modified', )
+        ordering = ( '-modified', '-pub_start', '-priority' )
 
     objects = SnippetManager()
 
     client_match_rules = models.ManyToManyField(
-            ClientMatchRule, blank=True)
+            ClientMatchRule, blank=False)
     
     name = models.CharField(
-            _("name for snippet (not displayed)"), 
+            _("short name (only shown to admins)"), 
             blank=False, max_length=80)
     body = models.TextField(
-            _("snippet content body"), 
+            _("content body"), 
             blank=False)
+
+    priority = models.IntegerField(
+            _('sort order priority'),
+            default=0, blank=True, null=True)
+    disabled = models.BooleanField(
+            _('disabled and not displayed?'),
+            default=False)
+    pub_start = models.DateTimeField(
+            _('display start time (optional)'),
+            blank=True, null=True) 
+    pub_end = models.DateTimeField(
+            _('display end time (optional)'),
+            blank=True, null=True) 
+
     created = models.DateTimeField(
             _('date created'), 
             auto_now_add=True, blank=False)

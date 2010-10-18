@@ -27,7 +27,7 @@ from homesnippets.models import CACHE_SNIPPET_LASTMOD_PREFIX
 import django.core.cache
 import homesnippets.models
 
-class SnippetsTestCase(TestCase):
+class HomesnippetsTestCase(TestCase):
 
     def setUp(self):
         self.log = logging.getLogger('nose.homesnippets')
@@ -57,11 +57,16 @@ class SnippetsTestCase(TestCase):
         """Given a data structure defining snippets, create the model items"""
         snippets = {}
         for name, item_data in snippets_data['items'].items():
+            
             item = dict(zip(snippets_data['fields'], item_data))
-            snippets[name] = Snippet(name=item['name'], body=item['body'])
+            rules = item['rules']
+            del item['rules']
+
+            snippets[name] = Snippet(**item)
             snippets[name].save()
-            for rule in item['rules']:
+            for rule in rules:
                 snippets[name].client_match_rules.add(rule)
+
         return snippets
 
     def assert_snippets(self, tests):
@@ -76,7 +81,7 @@ class SnippetsTestCase(TestCase):
                         e_content, e_present and ' ' or ' not ', path))
 
 
-class TestSnippetsMatch(SnippetsTestCase):
+class TestSnippetsMatch(HomesnippetsTestCase):
     """Exercise selection of snippets via client match rules"""
 
     def test_simple_rules(self):
@@ -131,7 +136,6 @@ class TestSnippetsMatch(SnippetsTestCase):
             ),
         })
 
-
     def test_exclusion_rules(self):
         """Exercise match rules that exclude snippets"""
 
@@ -181,6 +185,37 @@ class TestSnippetsMatch(SnippetsTestCase):
                 ( snippets['usually'], False ),
             ),
         })
+
+    def test_disabled_snippets(self):
+        """Exercise omission of disabled snippets"""
+
+        rules = self.setup_rules({
+            'fields': ( 'exclude', ),
+            'items': {
+                'all': ( False, ),
+            }
+        })
+
+        snippets = self.setup_snippets(rules, {
+            'fields': ( 'name', 'body', 'disabled', 'rules' ),
+            'items': {
+                'shown_1':  ( 'one',   'Shown 1',  False, ( rules['all'], ) ),
+                'disabled': ( 'two',   'Disabled', True,  ( rules['all'], ) ),
+                'shown_2':  ( 'three', 'Shown 2',  False, ( rules['all'], ) ),
+            }
+        })
+
+        self.assert_snippets({
+            '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                ( snippets['shown_1'],  True ), 
+                ( snippets['shown_2'],  True ), 
+                ( snippets['disabled'], False ), 
+            ),
+        })
+
+    def test_pub_start_end_dates(self):
+        """Exercise the start/end publication dates"""
+        pass
 
     def test_regex_rules(self):
         """Exercise match rules that use regexes"""
@@ -246,10 +281,10 @@ class CacheClass(locmem.CacheClass):
         return locmem.CacheClass.clear(self)
 
 
-class TestSnippetsCache(SnippetsTestCase):
+class TestSnippetsCache(HomesnippetsTestCase):
 
     def setUp(self):
-        SnippetsTestCase.setUp(self)
+        HomesnippetsTestCase.setUp(self)
 
         settings.CACHE_BACKEND = 'homesnippets.tests://'
         self.cache = django.core.cache.get_cache(settings.CACHE_BACKEND)
