@@ -257,7 +257,6 @@ class TestSnippetsCache(SnippetsTestCase):
         homesnippets.models.cache = self.cache
         self.cache.clear()
 
-    @attr('current')
     def test_cache_invalidation(self):
         """Exercise cache invalidation through modification of rules and snippets"""
 
