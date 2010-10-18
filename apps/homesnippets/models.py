@@ -3,6 +3,7 @@ homesnippets models
 """
 import logging
 import hashlib
+from datetime import datetime
 from time import mktime, gmtime
 from django.conf import settings
 from django.db import models
@@ -166,6 +167,9 @@ class SnippetManager(models.Manager):
         than full Snippet model objects. This makes things easier to cache - 
         if full snippets are required, try using the id's to look them up.
         """
+        if time_now is None:
+            time_now = datetime.now()
+
         # TODO: Need to get the table names from respective models?
         cache_key = '%s%s' % (CACHE_SNIPPET_MATCH_PREFIX, _key_from_client(args))
         cache_hit = cache.get(cache_key)
@@ -218,9 +222,11 @@ class SnippetManager(models.Manager):
                     """ % ",".join(exclude_ids))
                 snippets = self.raw(sql % (' AND '.join(where))) 
 
+            # Reduce snippet model objects to more cacheable dicts
             snippet_data = [ 
                 dict(
                     id=snippet.id, 
+                    name=snippet.name,
                     body=snippet.body,
                     pub_start=snippet.pub_start,
                     pub_end=snippet.pub_end,
@@ -230,7 +236,15 @@ class SnippetManager(models.Manager):
             cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippet_data)
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 
-        snippets_data = cache_hit[2]
+        # Filter for date ranges here, rather than in SQL. 
+        #
+        # This is a compromise to make snippet match results more cacheable -
+        # ie. cached data should only be recalculated in response to content
+        # changes, not the passage of time.
+        snippets_data = [ s for s in cache_hit[2] if ( 
+            ( not s['pub_start'] or time_now >= s['pub_start'] ) and
+            ( not s['pub_end']   or time_now <  s['pub_end'] ) 
+        ) ]
 
         return snippets_data
 

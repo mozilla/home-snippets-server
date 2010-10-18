@@ -4,6 +4,7 @@ homesnippets app tests
 import logging
 import time
 import random
+import datetime
 
 from django.conf import settings
 
@@ -59,11 +60,15 @@ class HomesnippetsTestCase(TestCase):
         for name, item_data in snippets_data['items'].items():
             
             item = dict(zip(snippets_data['fields'], item_data))
+            if not 'name' in item:
+                item['name'] = name
+
             rules = item['rules']
             del item['rules']
 
             snippets[name] = Snippet(**item)
             snippets[name].save()
+
             for rule in rules:
                 snippets[name].client_match_rules.add(rule)
 
@@ -214,8 +219,49 @@ class TestSnippetsMatch(HomesnippetsTestCase):
         })
 
     def test_pub_start_end_dates(self):
-        """Exercise the start/end publication dates"""
-        pass
+        """Exercise start/end publication dates"""
+
+        rules = self.setup_rules({
+            'fields': ( 'exclude', ),
+            'items': {
+                'all': ( False, ),
+            }
+        })
+
+        snippets = self.setup_snippets(rules, {
+            'fields': ( 'body', 'rules', 'pub_start', 'pub_end', ),
+            'items': {
+                'shown_1':  ( 'Shown 1', ( rules['all'],),
+                    None, 
+                    None, ),
+                'shown_2':  ( 'Shown 2', ( rules['all'],), 
+                    datetime.datetime(2010, 10, 25), 
+                    None, ),
+                'shown_3':  ( 'Shown 3', ( rules['all'],), 
+                    None, 
+                    datetime.datetime(2010, 12, 24), ),
+                'shown_4':  ( 'Shown 4', ( rules['all'],), 
+                    datetime.datetime(2010, 10, 24), 
+                    datetime.datetime(2010, 10, 31), ),
+            }
+        })
+
+        expected = [
+            ( datetime.datetime(2010, 10, 01), 
+                ( 'shown_1', 'shown_3', ) ),
+            ( datetime.datetime(2010, 10, 25), 
+                ( 'shown_1', 'shown_2', 'shown_3', 'shown_4', ) ),
+            ( datetime.datetime(2010, 12, 24), 
+                ( 'shown_1', 'shown_2', 'shown_2', ) ),
+            ( datetime.datetime(2011, 01, 01), 
+                ( 'shown_1', 'shown_2', ) ),
+        ]
+
+        for tm, snippet_names in expected:
+            expected_names = set(snippet_names)
+            result_names = set(s['name'] 
+                for s in Snippet.objects.find_snippets_with_match_rules({}, tm))
+            eq_(expected_names, result_names)
 
     def test_regex_rules(self):
         """Exercise match rules that use regexes"""
