@@ -15,10 +15,10 @@ from django.utils.translation import ugettext_lazy as _
 
 CACHE_TIMEOUT = getattr(settings, 'SNIPPET_MODEL_CACHE_TIMEOUT')
 
-CACHE_RULE_MATCH_PREFIX = 'ClientMatchRule_Matches_'
-CACHE_RULE_LASTMOD_PREFIX = 'ClientMatchRule_LastMod_'
-CACHE_SNIPPET_MATCH_PREFIX = 'Snippet_Matches_'
-CACHE_SNIPPET_LASTMOD_PREFIX = 'Snippet_LastMod_'
+CACHE_RULE_MATCH_PREFIX = 'homesnippets_ClientMatchRule_Matches_'
+CACHE_RULE_LASTMOD_PREFIX = 'homesnippets_ClientMatchRule_LastMod_'
+CACHE_SNIPPET_MATCH_PREFIX = 'homesnippets_Snippet_Matches_'
+CACHE_SNIPPET_LASTMOD_PREFIX = 'homesnippets_Snippet_LastMod_'
 
 
 def _key_from_client(args):
@@ -159,7 +159,13 @@ post_save.connect(rule_update_lastmod, sender=ClientMatchRule)
 
 class SnippetManager(models.Manager):
 
-    def filter_by_match_rules(self, args):
+    def find_snippets_with_match_rules(self, args):
+        """Find snippets data using match rules. 
+
+        Returned is a list of dicts with id and body of snippets found, rather
+        than full Snippet model objects. This makes things easier to cache - 
+        if full snippets are required, try using the id's to look them up.
+        """
         # TODO: Need to get the table names from respective models?
         cache_key = '%s%s' % (CACHE_SNIPPET_MATCH_PREFIX, _key_from_client(args))
         cache_hit = cache.get(cache_key)
@@ -170,7 +176,7 @@ class SnippetManager(models.Manager):
             # timestamp of the cache results, discard the cache hit as invalid.
             keys = [ '%s%s' % (CACHE_RULE_LASTMOD_PREFIX, item)
                 for sublist in cache_hit[1] for item in sublist ]
-            keys.extend([ '%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, item.id)
+            keys.extend([ '%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, item['id'])
                 for item in cache_hit[2] ])
             lastmods = cache.get_many(keys).values()
             newer_lastmods = [ m for m in lastmods if m > cache_hit[0] ]
@@ -210,7 +216,9 @@ class SnippetManager(models.Manager):
                     """ % ",".join(exclude_ids))
                 snippets = self.raw(sql % (' AND '.join(where))) 
 
-            cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippets)
+            snippet_dicts = [ dict(id=snippet.id, body=snippet.body)
+                    for snippet in snippets ]
+            cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippet_dicts)
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 
         return cache_hit[2]
