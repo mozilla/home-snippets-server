@@ -66,11 +66,9 @@ class ClientMatchRule(models.Model):
 
     objects = ClientMatchRuleManager()
 
-    description = models.CharField(
-            _('description of the intent behind this rule'),
+    description = models.CharField( _('description of rule'),
             null=False, blank=False, default="None", max_length=200)
-    exclude = models.BooleanField(
-            _('exclusion rule?'),
+    exclude = models.BooleanField( _('exclusion rule?'),
             default=False)
 
     # browser/components/nsBrowserContentHandler.js:911:    
@@ -78,41 +76,29 @@ class ClientMatchRule(models.Model):
     # "/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%
     # /%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/";
 
-    startpage_version = models.CharField(
-            _('start page version'), 
+    startpage_version = models.CharField( _('start page version'), 
             null=True, blank=True, max_length=64)
-    name = models.CharField(
-            _('product name'), 
+    name = models.CharField( _('product name'), 
             null=True, blank=True, max_length=64)
-    version = models.CharField(
-            _('product version'), 
+    version = models.CharField( _('product version'), 
             null=True, blank=True, max_length=64)
-    appbuildid = models.CharField(
-            _('app build id'), 
+    appbuildid = models.CharField( _('app build id'), 
             null=True, blank=True, max_length=64)
-    build_target = models.CharField(
-            _('build target'), 
+    build_target = models.CharField( _('build target'), 
             null=True, blank=True, max_length=64)
-    locale = models.CharField(
-            _('locale'), 
+    locale = models.CharField( _('locale'), 
             null=True, blank=True, max_length=64)
-    channel = models.CharField(
-            _('channel'), 
+    channel = models.CharField( _('channel'), 
             null=True, blank=True, max_length=64)
-    os_version = models.CharField(
-            _('os version'), 
+    os_version = models.CharField( _('os version'), 
             null=True, blank=True, max_length=64)
-    distribution = models.CharField(
-            _('distribution'), 
+    distribution = models.CharField( _('distribution'), 
             null=True, blank=True, max_length=64)
-    distribution_version = models.CharField(
-            _('distribution version'), 
+    distribution_version = models.CharField( _('distribution version'), 
             null=True, blank=True, max_length=64)
-    created = models.DateTimeField(
-            _('date created'), 
+    created = models.DateTimeField( _('date created'), 
             auto_now_add=True, blank=False)
-    modified = models.DateTimeField(
-            _('date last modified'), 
+    modified = models.DateTimeField( _('date last modified'), 
             auto_now=True, blank=False)
 
     def __str__(self):
@@ -200,6 +186,7 @@ class SnippetManager(models.Manager):
                     SELECT "homesnippets_snippet".* 
                     FROM "homesnippets_snippet"
                     WHERE ( %s )
+                    ORDER BY priority, pub_start, modified
                 """
                 where = [
                     '( "homesnippets_snippet"."disabled" <> 1 )',
@@ -259,31 +246,23 @@ class Snippet(models.Model):
     client_match_rules = models.ManyToManyField(
             ClientMatchRule, blank=False)
     
-    name = models.CharField(
-            _("short name (only shown to admins)"), 
+    name = models.CharField( _("short name (only shown to admins)"), 
             blank=False, max_length=80)
-    body = models.TextField(
-            _("content body"), 
+    body = models.TextField( _("content body"), 
             blank=False)
 
-    priority = models.IntegerField(
-            _('sort order priority'),
+    priority = models.IntegerField( _('sort order priority'),
             default=0, blank=True, null=True)
-    disabled = models.BooleanField(
-            _('disabled and not displayed?'),
+    disabled = models.BooleanField( _('disabled?'),
             default=False)
-    pub_start = models.DateTimeField(
-            _('display start time (optional)'),
+    pub_start = models.DateTimeField( _('display start time'),
             blank=True, null=True) 
-    pub_end = models.DateTimeField(
-            _('display end time (optional)'),
+    pub_end = models.DateTimeField( _('display end time'),
             blank=True, null=True) 
 
-    created = models.DateTimeField(
-            _('date created'), 
+    created = models.DateTimeField( _('date created'), 
             auto_now_add=True, blank=False)
-    modified = models.DateTimeField(
-            _('date last modified'), 
+    modified = models.DateTimeField( _('date last modified'), 
             auto_now=True, blank=False)
 
     
