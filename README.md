@@ -47,3 +47,4 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
 ## Deployment
 
 * Follow the steps for development, but use the vendor library and use Schematic migrations.
+* Also, check out `settings_local.py-dist-prod` rather than the `-dev` version.

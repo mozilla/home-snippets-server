@@ -1,0 +1,46 @@
+# Local settings
+from settings import *
+from os.path import abspath, dirname, join
+
+DEV = False # Set to False for production
+
+SNIPPET_HTTP_MAX_AGE = 60 * 60 * 24
+SNIPPET_MODEL_CACHE_TIMEOUT = 3600
+
+CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+
+CACHE_MIDDLEWARE_SECONDS = SNIPPET_HTTP_MAX_AGE
+
+SERVE_MEDIA = DEV
+DEBUG = DEV
+TEMPLATE_DEBUG = DEBUG
+EMAIL_DEBUG = DEBUG
+
+ADMINS += [
+    ('l.m.orchard', 'lorchard@mozilla.com'),
+]
+MANAGERS = ADMINS
+
+TIME_ZONE = 'America/Detroit'
+
+DATABASE_ROUTERS = ('multidb.MasterSlaveRouter',)
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "homesnippets",
+        "USER": "homesnippets",
+        "PASSWORD": "homesnippets",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    },
+    "shadow-1": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "dev.db",
+        "USER": "homesnippets",
+        "PASSWORD": "homesnippets",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    },
+}
+SLAVE_DATABASES = ['shadow-1',] # 'shadow-2']
