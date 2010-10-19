@@ -183,28 +183,28 @@ class SnippetManager(models.Manager):
 
             else:
                 sql = """
-                    SELECT "homesnippets_snippet".* 
-                    FROM "homesnippets_snippet"
+                    SELECT homesnippets_snippet.* 
+                    FROM homesnippets_snippet
                     WHERE ( %s )
                     ORDER BY priority, pub_start, modified
                 """
                 where = [
-                    '( "homesnippets_snippet"."disabled" <> 1 )',
+                    '( homesnippets_snippet.disabled <> 1 )',
                 ]
                 if include_ids:
                     where.append(""" 
-                        "homesnippets_snippet"."id" IN (
-                            SELECT "snippet_id"
-                            FROM "homesnippets_snippet_client_match_rules"
-                            WHERE "clientmatchrule_id" IN (%s)
+                        homesnippets_snippet.id IN (
+                            SELECT snippet_id
+                            FROM homesnippets_snippet_client_match_rules
+                            WHERE clientmatchrule_id IN (%s)
                         ) 
                     """ % ",".join(include_ids))
                 if exclude_ids:
                     where.append(""" 
-                        "homesnippets_snippet"."id" NOT IN (
-                            SELECT "snippet_id"
-                            FROM "homesnippets_snippet_client_match_rules"
-                            WHERE "clientmatchrule_id" IN (%s)
+                        homesnippets_snippet.id NOT IN (
+                            SELECT snippet_id
+                            FROM homesnippets_snippet_client_match_rules
+                            WHERE clientmatchrule_id IN (%s)
                         ) 
                     """ % ",".join(exclude_ids))
                 snippets = self.raw(sql % (' AND '.join(where))) 
