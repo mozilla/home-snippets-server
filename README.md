@@ -56,12 +56,10 @@ For Apache, something like this should do (adjust paths to suit your installatio
    
     Alias /site_media/ /www/snippets.decafbad.com/app/home-snippets-server/site_media/
     <Directory /www/snippets.decafbad.com/app/home-snippets-server/site_media>
-        AllowOverride all
         Options -ExecCGI
     </Directory>
     Alias /media/ /www/snippets.decafbad.com/app/home-snippets-server/vendor/packages/Django/django/contrib/admin/media/
     <Directory /www/snippets.decafbad.com/app/home-snippets-server/vendor/packages/Django/django/contrib/admin/media>
-        AllowOverride all
         Options -ExecCGI
     </Directory>
 
