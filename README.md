@@ -48,3 +48,30 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
 
 * Follow the steps for development, but use the vendor library and use Schematic migrations.
 * Also, check out `settings_local.py-dist-prod` rather than the `-dev` version.
+* Configure your web server to serve up static assets, which are only served by Django in development.
+
+### Static assets
+
+For Apache, something like this should do (adjust paths to suit your installation):
+   
+    Alias /site_media/ /www/snippets.decafbad.com/app/home-snippets-server/site_media/
+    <Directory /www/snippets.decafbad.com/app/home-snippets-server/site_media>
+        AllowOverride all
+        Options -ExecCGI
+    </Directory>
+    Alias /media/ /www/snippets.decafbad.com/app/home-snippets-server/vendor/packages/Django/django/contrib/admin/media/
+    <Directory /www/snippets.decafbad.com/app/home-snippets-server/vendor/packages/Django/django/contrib/admin/media>
+        AllowOverride all
+        Options -ExecCGI
+    </Directory>
+
+Useful settings, if you need to change the locations from which these assets are served (eg. to a CDN or other host)
+
+* `MEDIA_URL = '/site_media/'`
+    * May be an absolute URL
+* `MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'site_media')`
+    * Absolute file path to location of `site_media`
+* `ADMIN_MEDIA_PREFIX = '/media/'`
+    * May be an absolute URL
+* `ADMIN_MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'vendor/packages/Django/django/contrib/admin/media')`
+    * Absolute file path to location of `vendor/packages/Django/django/contrib/admin/media`
