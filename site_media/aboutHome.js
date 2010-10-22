@@ -162,39 +162,18 @@ function loadSnippets()
 function showSnippets()
 {
   let snippets = localStorage["snippets"];
-
   if (snippets) {
-    // Attempt to parse the snippets as XML source
-    let parser = new DOMParser();
-    let dom = parser.parseFromString(snippets, 'text/xml');
-    if ('parsererror' == dom.documentElement.nodeName) {
-        snippets = null;
-    } else {
-        snippets = dom.documentElement;
-    }
-  }
-
-  if (snippets) {
-
     let snippetsElt = document.getElementById("snippets");
-    snippets = document.importNode(snippets, true);
-    snippetsElt.appendChild(snippets);
-
+    snippetsElt.innerHTML = snippets;
+    // Scripts injected by innerHTML are inactive, so we have to relocate them
+    // through DOM manipulation to activate their contents.
     Array.forEach(snippetsElt.getElementsByTagName("script"), function(elt) {
       let relocatedScript = document.createElement("script");
       relocatedScript.type = "text/javascript;version=1.8";
       relocatedScript.text = elt.text;
       elt.parentNode.replaceChild(relocatedScript, elt);
     });
-
-    let doc_head = document.getElementsByTagName("head")[0];
-    Array.forEach(snippetsElt.getElementsByTagName("style"), function(elt) {
-      elt.parentNode.removeChild(elt);
-      //doc_head.appendChild(elt);
-    });
-
     snippetsElt.hidden = false;
-
   } else {
     // If there are no saved snippets, show one of the default ones.
     let defaultSnippetsElt = document.getElementById("defaultSnippets");
