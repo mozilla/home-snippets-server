@@ -270,5 +270,9 @@ def snippet_update_lastmod(sender, instance, **kwargs):
     now = mktime(gmtime())
     cache.set('%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, instance.id), 
             now, CACHE_TIMEOUT)
+    for rule in instance.client_match_rules.all():
+        cache.set('%s%s' % (CACHE_RULE_LASTMOD_PREFIX, rule.id), 
+                now, CACHE_TIMEOUT)
+
 post_save.connect(snippet_update_lastmod, sender=Snippet)
 
