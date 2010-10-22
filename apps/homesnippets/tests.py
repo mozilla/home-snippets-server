@@ -535,8 +535,9 @@ class TestSnippetsCache(HomesnippetsTestCase):
         })
 
         self.assert_cache_events((
-            # Test changes a snippet
+            # Test changes a snippet, which also bumps the rule
             ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_LASTMOD_PREFIX),
             
             # Try getting a snippet match
             ('get', CACHE_SNIPPET_MATCH_PREFIX),
@@ -549,8 +550,8 @@ class TestSnippetsCache(HomesnippetsTestCase):
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX]),
             ('get', CACHE_RULE_LASTMOD_PREFIX),
             
-            # Cached rules were still valid, but the snippet set needed to be
-            # rebuilt and cached again.
+            # Both the rule match and snippet set are cached
+            ('set', CACHE_RULE_MATCH_PREFIX),
             ('set', CACHE_SNIPPET_MATCH_PREFIX),
         ))
 
