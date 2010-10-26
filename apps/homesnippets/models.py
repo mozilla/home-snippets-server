@@ -16,10 +16,11 @@ from django.utils.translation import ugettext_lazy as _
 
 CACHE_TIMEOUT = getattr(settings, 'SNIPPET_MODEL_CACHE_TIMEOUT')
 
-CACHE_RULE_MATCH_PREFIX = 'homesnippets_ClientMatchRule_Matches_'
-CACHE_RULE_LASTMOD_PREFIX = 'homesnippets_ClientMatchRule_LastMod_'
-CACHE_SNIPPET_MATCH_PREFIX = 'homesnippets_Snippet_Matches_'
+CACHE_RULE_MATCH_PREFIX      = 'homesnippets_ClientMatchRule_Matches_'
+CACHE_RULE_LASTMOD_PREFIX    = 'homesnippets_ClientMatchRule_LastMod_'
+CACHE_SNIPPET_MATCH_PREFIX   = 'homesnippets_Snippet_Matches_'
 CACHE_SNIPPET_LASTMOD_PREFIX = 'homesnippets_Snippet_LastMod_'
+CACHE_SNIPPET_LOOKUP_PREFIX  = 'homesnippets_Snippet_Lookup_'
 
 
 def _key_from_client(args):
@@ -156,8 +157,34 @@ class SnippetManager(models.Manager):
         if time_now is None:
             time_now = datetime.now()
 
-        # TODO: Need to get the table names from respective models?
-        cache_key = '%s%s' % (CACHE_SNIPPET_MATCH_PREFIX, _key_from_client(args))
+        include_ids, exclude_ids = \
+            ClientMatchRule.objects.find_ids_for_matches(args)
+        snippets = self.find_snippets_for_rule_ids(include_ids, exclude_ids)
+
+        # Filter for date ranges here, rather than in SQL. 
+        #
+        # This is a compromise to make snippet match results more cacheable -
+        # ie. cached data should only be recalculated in response to content
+        # changes, not the passage of time.
+        snippets_data = [ s for s in snippets if ( 
+            ( not s['pub_start'] or time_now >= s['pub_start'] ) and
+            ( not s['pub_end']   or time_now <  s['pub_end'] ) 
+        ) ]
+
+        return snippets_data
+
+    def find_snippets_for_rule_ids(self, include_ids, exclude_ids):
+        """Given a set of matching inclusion & exclusion rule IDs, look up the
+        corresponding snippets."""
+
+        if not include_ids and not exclude_ids: 
+            return []
+
+        cache_key = '%s%s' % ( CACHE_SNIPPET_LOOKUP_PREFIX, hashlib.md5(
+            'include:%s;exclude:%s' % ( 
+                ','.join(include_ids), ','.join(exclude_ids) 
+            )
+        ).hexdigest() )
         cache_hit = cache.get(cache_key)
 
         if cache_hit:
@@ -174,43 +201,36 @@ class SnippetManager(models.Manager):
                 cache_hit = None
 
         if not cache_hit:
-
-            include_ids, exclude_ids = \
-                ClientMatchRule.objects.find_ids_for_matches(args)
-
-            if not include_ids and not exclude_ids: 
-                snippets = []
-
-            else:
-                sql = """
-                    SELECT homesnippets_snippet.* 
-                    FROM homesnippets_snippet
-                    WHERE ( %s )
-                    ORDER BY priority, pub_start, modified
-                """
-                where = [
-                    '( homesnippets_snippet.disabled <> 1 )',
-                ]
-                if include_ids:
-                    where.append(""" 
-                        homesnippets_snippet.id IN (
-                            SELECT snippet_id
-                            FROM homesnippets_snippet_client_match_rules
-                            WHERE clientmatchrule_id IN (%s)
-                        ) 
-                    """ % ",".join(include_ids))
-                if exclude_ids:
-                    where.append(""" 
-                        homesnippets_snippet.id NOT IN (
-                            SELECT snippet_id
-                            FROM homesnippets_snippet_client_match_rules
-                            WHERE clientmatchrule_id IN (%s)
-                        ) 
-                    """ % ",".join(exclude_ids))
-                snippets = self.raw(sql % (' AND '.join(where))) 
+            sql_base = """
+                SELECT homesnippets_snippet.* 
+                FROM homesnippets_snippet
+                WHERE ( %s )
+                ORDER BY priority, pub_start, modified
+            """
+            where = [
+                '( homesnippets_snippet.disabled <> 1 )',
+            ]
+            if include_ids:
+                where.append(""" 
+                    homesnippets_snippet.id IN (
+                        SELECT snippet_id
+                        FROM homesnippets_snippet_client_match_rules
+                        WHERE clientmatchrule_id IN (%s)
+                    ) 
+                """ % ",".join(include_ids))
+            if exclude_ids:
+                where.append(""" 
+                    homesnippets_snippet.id NOT IN (
+                        SELECT snippet_id
+                        FROM homesnippets_snippet_client_match_rules
+                        WHERE clientmatchrule_id IN (%s)
+                    ) 
+                """ % ",".join(exclude_ids))
+            sql = sql_base % (' AND '.join(where))
 
             # Reduce snippet model objects to more cacheable dicts
-            snippet_data = [ 
+            snippet_objs = self.raw(sql)
+            snippets = [ 
                 dict(
                     id=snippet.id, 
                     name=snippet.name,
@@ -218,22 +238,12 @@ class SnippetManager(models.Manager):
                     pub_start=snippet.pub_start,
                     pub_end=snippet.pub_end,
                 )
-                for snippet in snippets 
+                for snippet in snippet_objs
             ]
-            cache_hit = (mktime(gmtime()), (include_ids, exclude_ids), snippet_data)
+            cache_hit = ( mktime(gmtime()), (include_ids, exclude_ids), snippets, )
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 
-        # Filter for date ranges here, rather than in SQL. 
-        #
-        # This is a compromise to make snippet match results more cacheable -
-        # ie. cached data should only be recalculated in response to content
-        # changes, not the passage of time.
-        snippets_data = [ s for s in cache_hit[2] if ( 
-            ( not s['pub_start'] or time_now >= s['pub_start'] ) and
-            ( not s['pub_end']   or time_now <  s['pub_end'] ) 
-        ) ]
-
-        return snippets_data
+        return cache_hit[2]
 
 
 class Snippet(models.Model):
