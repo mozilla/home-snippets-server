@@ -5,6 +5,8 @@ from django.views.generic.simple import direct_to_template
 from django.contrib import admin
 admin.autodiscover()
 
+handler404 = 'homesnippets.views.handler404'
+
 urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^', include('homesnippets.urls')),
