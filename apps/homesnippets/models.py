@@ -16,11 +16,12 @@ from django.utils.translation import ugettext_lazy as _
 
 CACHE_TIMEOUT = getattr(settings, 'SNIPPET_MODEL_CACHE_TIMEOUT')
 
-CACHE_RULE_MATCH_PREFIX      = 'homesnippets_ClientMatchRule_Matches_'
-CACHE_RULE_LASTMOD_PREFIX    = 'homesnippets_ClientMatchRule_LastMod_'
-CACHE_SNIPPET_MATCH_PREFIX   = 'homesnippets_Snippet_Matches_'
-CACHE_SNIPPET_LASTMOD_PREFIX = 'homesnippets_Snippet_LastMod_'
-CACHE_SNIPPET_LOOKUP_PREFIX  = 'homesnippets_Snippet_Lookup_'
+CACHE_RULE_MATCH_PREFIX       = 'homesnippets_ClientMatchRule_Matches_'
+CACHE_RULE_LASTMOD_PREFIX     = 'homesnippets_ClientMatchRule_LastMod_'
+CACHE_RULE_ALL_PREFIX         = 'homesnippets_ClientMatchRule_All'
+CACHE_RULE_ALL_LASTMOD_PREFIX = 'homesnippets_ClientMatchRule_All_LastMod'
+CACHE_SNIPPET_LASTMOD_PREFIX  = 'homesnippets_Snippet_LastMod_'
+CACHE_SNIPPET_LOOKUP_PREFIX   = 'homesnippets_Snippet_Lookup_'
 
 
 def _key_from_client(args):
@@ -49,12 +50,30 @@ class ClientMatchRuleManager(models.Manager):
 
         if not cache_hit:
             # Cache miss, so recalculate the results and cache them.
-            matches = [ rule for rule in self.all() if rule.is_match(args) ]
+            matches = [ rule for rule in self._cached_all() 
+                    if rule.is_match(args) ]
             (include_ids, exclude_ids) = (
                 [str(rule.id) for rule in matches if not rule.exclude],
                 [str(rule.id) for rule in matches if rule.exclude],
             )
             cache_hit = (mktime(gmtime()), (include_ids, exclude_ids))
+            cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
+
+        return cache_hit[1]
+
+    def _cached_all(self):
+        """Cached version of self.all(), invalidated by change to any rule."""
+        cache_key = CACHE_RULE_ALL_PREFIX
+        cache_hit = cache.get(cache_key)
+
+        if cache_hit:
+            # Entire cached rule set gets invalidated if any rule changed.
+            lastmod = cache.get(CACHE_RULE_ALL_LASTMOD_PREFIX)
+            if lastmod > cache_hit[0]:
+                cache_hit = None
+
+        if not cache_hit:
+            cache_hit = ( mktime(gmtime()), self.all() )
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 
         return cache_hit[1]
@@ -139,9 +158,14 @@ class ClientMatchRule(models.Model):
 
 
 def rule_update_lastmod(sender, instance, **kwargs):
+    """On a change to a rule, bump lastmod timestamps for that rule and the set
+    of all cached rules."""
     now = mktime(gmtime())
+    # Set lastmod stamps for both this particular rule, and the set of all
+    # cached rules.
     cache.set('%s%s' % (CACHE_RULE_LASTMOD_PREFIX, instance.id), 
             now, CACHE_TIMEOUT)
+    cache.set(CACHE_RULE_ALL_LASTMOD_PREFIX, now, CACHE_TIMEOUT)
 post_save.connect(rule_update_lastmod, sender=ClientMatchRule)
     
 
@@ -180,6 +204,9 @@ class SnippetManager(models.Manager):
         if not include_ids and not exclude_ids: 
             return []
 
+        # Could base the cache key on the entire text of the SQL query
+        # constructed below, but we might someday use something other than a DB
+        # for persistence.
         cache_key = '%s%s' % ( CACHE_SNIPPET_LOOKUP_PREFIX, hashlib.md5(
             'include:%s;exclude:%s' % ( 
                 ','.join(include_ids), ','.join(exclude_ids) 
@@ -201,6 +228,7 @@ class SnippetManager(models.Manager):
                 cache_hit = None
 
         if not cache_hit:
+            # No cache hit, look up the snippets associated with rules.
             sql_base = """
                 SELECT homesnippets_snippet.* 
                 FROM homesnippets_snippet
@@ -277,6 +305,7 @@ class Snippet(models.Model):
 
     
 def snippet_update_lastmod(sender, instance, **kwargs):
+    """On a change to a snippet, bump its cached lastmod timestamp"""
     now = mktime(gmtime())
     cache.set('%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, instance.id), 
             now, CACHE_TIMEOUT)

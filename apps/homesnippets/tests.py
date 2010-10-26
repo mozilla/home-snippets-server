@@ -22,7 +22,7 @@ from nose.plugins.attrib import attr
 
 from homesnippets.models import Snippet, ClientMatchRule
 from homesnippets.models import CACHE_RULE_MATCH_PREFIX, CACHE_RULE_LASTMOD_PREFIX
-from homesnippets.models import CACHE_SNIPPET_MATCH_PREFIX
+from homesnippets.models import CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX
 from homesnippets.models import CACHE_SNIPPET_LASTMOD_PREFIX
 from homesnippets.models import CACHE_SNIPPET_LOOKUP_PREFIX
 
@@ -310,14 +310,19 @@ class CacheClass(locmem.CacheClass):
         locmem.CacheClass.__init__(self, server, params)
         self.id = random.randint(0,1000)
         self.log = []
+        self.during_many = False
 
     def get(self, key, default=None):
-        self.log.append(('get', key))
+        if not self.during_many:
+            self.log.append(('get', key))
         return locmem.CacheClass.get(self,key,default)
 
     def get_many(self, keys):
         self.log.append(('get_many', keys))
-        return locmem.CacheClass.get_many(self,keys)
+        self.during_many = True
+        rv = locmem.CacheClass.get_many(self,keys)
+        self.during_many = False
+        return rv
 
     def set(self, key, value, timeout=None):
         self.log.append(('set', key, value))
@@ -339,6 +344,7 @@ class TestSnippetsCache(HomesnippetsTestCase):
         homesnippets.models.cache = self.cache
         self.cache.clear()
 
+    @attr('now')
     def test_cache_invalidation(self):
         """Exercise cache invalidation through modification of rules and snippets"""
 
@@ -397,10 +403,15 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # First, the lastmod times for rules are cached
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
 
             # Then, lastmod times for snippets are cached.
             ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
@@ -409,18 +420,24 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request 1
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('set', CACHE_RULE_ALL_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
             # Request 2
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
             # Request 3
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
@@ -489,18 +506,26 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Rule content changed.
             ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
             
             # Rule cache miss
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
                 CACHE_RULE_LASTMOD_PREFIX]),
+
+            # All rules cache miss
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('set', CACHE_RULE_ALL_PREFIX),
+
             ('set', CACHE_RULE_MATCH_PREFIX),
 
             # Snippet cache miss
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX, 
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX,
                 CACHE_SNIPPET_LASTMOD_PREFIX]),
+
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
         ))
@@ -527,6 +552,8 @@ class TestSnippetsCache(HomesnippetsTestCase):
             # Rule cache miss
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX]),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             
             # Snippet cache miss
@@ -563,6 +590,8 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request #1 - cache miss on rules and snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
@@ -571,12 +600,16 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request #2 - cache miss on rules, but hit on snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #3 - cache miss on rules, but hit on snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
@@ -602,19 +635,11 @@ class TestSnippetsCache(HomesnippetsTestCase):
             
             else:
                 prefixes = expected[1]
+
                 for idx2 in range(0, len(prefixes)):
                     ok_(result[1][idx2].startswith(prefixes[idx2]),
                         '%s should start with %s' % (
                             result[1][idx2], expected[1][idx2] ))
-
-                if 'get_many' == expected[0]:
-                    for idx2 in range(0, len(prefixes)):
-                        result = self.cache.log.pop(0)
-                        eq_('get', result[0])
-                        ok_(result[1].startswith(prefixes[idx2]),
-                            '%s should start with %s' % (
-                                result[1], expected[1][idx2] ))
-                        
 
         result_len = len(self.cache.log)
         eq_(0, result_len,
