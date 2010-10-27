@@ -7,7 +7,7 @@ from datetime import datetime
 from time import mktime, gmtime
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.core.cache import cache
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
@@ -20,6 +20,7 @@ CACHE_RULE_MATCH_PREFIX       = 'homesnippets_ClientMatchRule_Matches_'
 CACHE_RULE_LASTMOD_PREFIX     = 'homesnippets_ClientMatchRule_LastMod_'
 CACHE_RULE_ALL_PREFIX         = 'homesnippets_ClientMatchRule_All'
 CACHE_RULE_ALL_LASTMOD_PREFIX = 'homesnippets_ClientMatchRule_All_LastMod'
+CACHE_RULE_NEW_LASTMOD_PREFIX = 'homesnippets_ClientMatchRule_New_LastMod'
 CACHE_SNIPPET_LASTMOD_PREFIX  = 'homesnippets_Snippet_LastMod_'
 CACHE_SNIPPET_LOOKUP_PREFIX   = 'homesnippets_Snippet_Lookup_'
 
@@ -37,13 +38,14 @@ class ClientMatchRuleManager(models.Manager):
         cache_hit = cache.get(cache_key)
 
         if cache_hit:
-            # Look to see if any rule involved in this cache hit has been
-            # changed since the match results were cached. If so, discard the
-            # cache hit.
-            lastmods = cache.get_many([
+            # If since caching this hit, any of the rules involved were
+            # modified or if any new rules were created, invalidate the results.
+            lastmod_keys = [
                 '%s%s' % (CACHE_RULE_LASTMOD_PREFIX, item)
                 for sublist in cache_hit[1] for item in sublist
-            ]).values()
+            ]
+            lastmod_keys.append(CACHE_RULE_NEW_LASTMOD_PREFIX)
+            lastmods = cache.get_many(lastmod_keys).values()
             newer_lastmods = [ m for m in lastmods if m > cache_hit[0] ]
             if newer_lastmods:
                 cache_hit = None
@@ -63,18 +65,19 @@ class ClientMatchRuleManager(models.Manager):
 
     def _cached_all(self):
         """Cached version of self.all(), invalidated by change to any rule."""
-        cache_key = CACHE_RULE_ALL_PREFIX
-        cache_hit = cache.get(cache_key)
+        c_data = cache.get_many([CACHE_RULE_ALL_PREFIX, 
+            CACHE_RULE_ALL_LASTMOD_PREFIX])
 
-        if cache_hit:
-            # Entire cached rule set gets invalidated if any rule changed.
-            lastmod = cache.get(CACHE_RULE_ALL_LASTMOD_PREFIX)
-            if lastmod > cache_hit[0]:
-                cache_hit = None
+        lastmod   = c_data.get(CACHE_RULE_ALL_LASTMOD_PREFIX, None)
+        cache_hit = c_data.get(CACHE_RULE_ALL_PREFIX, None)
+
+        # Entire cached set gets invalidated if any rule changed.
+        if cache_hit and lastmod > cache_hit[0]:
+            cache_hit = None
 
         if not cache_hit:
             cache_hit = ( mktime(gmtime()), self.all() )
-            cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
+            cache.set(CACHE_RULE_ALL_PREFIX, cache_hit, CACHE_TIMEOUT)
 
         return cache_hit[1]
 
@@ -157,17 +160,24 @@ class ClientMatchRule(models.Model):
         return is_match
 
 
-def rule_update_lastmod(sender, instance, **kwargs):
+def rule_update_lastmods(sender, instance, created=False, **kwargs):
     """On a change to a rule, bump lastmod timestamps for that rule and the set
     of all cached rules."""
     now = mktime(gmtime())
-    # Set lastmod stamps for both this particular rule, and the set of all
-    # cached rules.
-    cache.set('%s%s' % (CACHE_RULE_LASTMOD_PREFIX, instance.id), 
-            now, CACHE_TIMEOUT)
-    cache.set(CACHE_RULE_ALL_LASTMOD_PREFIX, now, CACHE_TIMEOUT)
-post_save.connect(rule_update_lastmod, sender=ClientMatchRule)
-    
+    lastmods = {
+        # Timestamp for this rule.
+        '%s%s' % (CACHE_RULE_LASTMOD_PREFIX, instance.id): now,
+        # Timestamp for set of all rules.
+        CACHE_RULE_ALL_LASTMOD_PREFIX: now,
+    }
+    if created:
+        # Update timestamp since last new rule created.
+        lastmods[CACHE_RULE_NEW_LASTMOD_PREFIX] = now
+    cache.set_many(lastmods, CACHE_TIMEOUT)
+
+post_save.connect(rule_update_lastmods, sender=ClientMatchRule)
+post_delete.connect(rule_update_lastmods, sender=ClientMatchRule)
+
 
 class SnippetManager(models.Manager):
 
@@ -215,13 +225,13 @@ class SnippetManager(models.Manager):
         cache_hit = cache.get(cache_key)
 
         if cache_hit:
-            # Gather up the last modified timestamps of all snippets and rules
-            # involved in the cached results. If any of them is newer than the
-            # timestamp of the cache results, discard the cache hit as invalid.
+            # Invalidate if any of the lastmods of related rules, snippets, or
+            # new rule creation is newer than the cache
             keys = [ '%s%s' % (CACHE_RULE_LASTMOD_PREFIX, item)
                 for sublist in cache_hit[1] for item in sublist ]
             keys.extend([ '%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, item['id'])
                 for item in cache_hit[2] ])
+            keys.append(CACHE_RULE_NEW_LASTMOD_PREFIX)
             lastmods = cache.get_many(keys).values()
             newer_lastmods = [ m for m in lastmods if m > cache_hit[0] ]
             if newer_lastmods:
@@ -307,11 +317,13 @@ class Snippet(models.Model):
 def snippet_update_lastmod(sender, instance, **kwargs):
     """On a change to a snippet, bump its cached lastmod timestamp"""
     now = mktime(gmtime())
-    cache.set('%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, instance.id), 
-            now, CACHE_TIMEOUT)
+    lastmods = {
+        '%s%s' % (CACHE_SNIPPET_LASTMOD_PREFIX, instance.id): now,
+    }
     for rule in instance.client_match_rules.all():
-        cache.set('%s%s' % (CACHE_RULE_LASTMOD_PREFIX, rule.id), 
-                now, CACHE_TIMEOUT)
+        lastmods['%s%s' % (CACHE_RULE_LASTMOD_PREFIX, rule.id)] = now
+    cache.set_many(lastmods, CACHE_TIMEOUT)
 
 post_save.connect(snippet_update_lastmod, sender=Snippet)
+post_delete.connect(snippet_update_lastmod, sender=Snippet)
 

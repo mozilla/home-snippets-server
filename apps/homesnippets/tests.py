@@ -23,6 +23,7 @@ from nose.plugins.attrib import attr
 from homesnippets.models import Snippet, ClientMatchRule
 from homesnippets.models import CACHE_RULE_MATCH_PREFIX, CACHE_RULE_LASTMOD_PREFIX
 from homesnippets.models import CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX
+from homesnippets.models import CACHE_RULE_NEW_LASTMOD_PREFIX
 from homesnippets.models import CACHE_SNIPPET_LASTMOD_PREFIX
 from homesnippets.models import CACHE_SNIPPET_LOOKUP_PREFIX
 
@@ -317,6 +318,15 @@ class CacheClass(locmem.CacheClass):
             self.log.append(('get', key))
         return locmem.CacheClass.get(self,key,default)
 
+    def set(self, key, value, timeout=None):
+        if not self.during_many:
+            self.log.append(('set', key, value))
+        return locmem.CacheClass.set(self,key,value,timeout)
+
+    def clear(self):
+        self.log = []
+        return locmem.CacheClass.clear(self)
+
     def get_many(self, keys):
         self.log.append(('get_many', keys))
         self.during_many = True
@@ -324,13 +334,12 @@ class CacheClass(locmem.CacheClass):
         self.during_many = False
         return rv
 
-    def set(self, key, value, timeout=None):
-        self.log.append(('set', key, value))
-        return locmem.CacheClass.set(self,key,value,timeout)
-
-    def clear(self):
-        self.log = []
-        return locmem.CacheClass.clear(self)
+    def set_many(self, keys, timeout):
+        self.log.append(('set_many', keys, timeout))
+        self.during_many = True
+        rv = locmem.CacheClass.set_many(self,keys,timeout)
+        self.during_many = False
+        return rv
 
 
 class TestSnippetsCache(HomesnippetsTestCase):
@@ -344,11 +353,7 @@ class TestSnippetsCache(HomesnippetsTestCase):
         homesnippets.models.cache = self.cache
         self.cache.clear()
 
-    @attr('now')
-    def test_cache_invalidation(self):
-        """Exercise cache invalidation through modification of rules and snippets"""
-
-        rules = self.setup_rules({
+        self.rules = self.setup_rules({
             'fields': ( 'startpage_version', 'name', 'version', 'locale', ),
             'items': {
                 # Specific rule, expected to be matched
@@ -364,63 +369,64 @@ class TestSnippetsCache(HomesnippetsTestCase):
             }
         })
 
-        snippets = self.setup_snippets(rules, {
+        self.snippets = self.setup_snippets(self.rules, {
             'fields': ( 'name', 'body', 'rules' ),
             'items': {
                 # Using specific and less-specific rule
                 'expected': ( 'test 1', 'Expected body data', 
-                    ( rules['specific'], rules['vague'] ) ),
+                    ( self.rules['specific'], self.rules['vague'] ) ),
                 # No rules, so always included in results
                 'ever': ( 'test 2', 'Ever-present body data', 
-                    ( rules['all'], ) ),
+                    ( self.rules['all'], ) ),
                 # Rule attached that will never be matched, so should never appear
                 'never': (' test 3', 'Never-present body data', 
-                    ( rules['unmatched'], ) ),
+                    ( self.rules['unmatched'], ) ),
             }
         })
 
+        # Warm up the cache with some initial requests...
         self.assert_snippets({
             '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], True  ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], True  ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
             '/9/Waterduck/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], False ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], False ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
             '/1/Mudfish/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
-                ( snippets['expected'], False ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], False ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
         })
 
-        # Kind of a hack, but looking for this general pattern of cache access
-        # should be good enough for ensuring things are working so far...
+        # Looking for this pattern of cache access should be good enough for
+        # ensuring things are working so far...
         self.assert_cache_events((
 
             # First, the lastmod times for rules are cached
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('set_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
 
             # Then, lastmod times for snippets are cached.
-            ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
-            ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
-            ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
+            ('set_many', [CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('set_many', [CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request 1
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_ALL_PREFIX),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
@@ -428,37 +434,41 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request 2
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
             # Request 3
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
             
         ))
 
+        # Ensure clock ticks before further cache activity
+        time.sleep(1)
+
+    def test_cache_hits(self):
+        """Exercise cache hits with no cause for invalidation"""
+
         self.assert_snippets({
             '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], True  ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], True  ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
             '/9/Waterduck/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], False ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], False ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
             '/1/Mudfish/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
-                ( snippets['expected'], False ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], False ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
         })
 
@@ -468,7 +478,7 @@ class TestSnippetsCache(HomesnippetsTestCase):
             # Request 1
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_LASTMOD_PREFIX]),
+                CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
                 CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX, 
@@ -476,46 +486,49 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request 2
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
                 CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request 3
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
 
         ))
 
+    def test_invalidation_on_rule_change(self):
+        """Exercise cache invalidation on change to a client match rule"""
+
         # Change a rule, which should invalidate cached results for snippets
-        time.sleep(1) # ensure the clock ticks
-        rules['vague'].description = 'changed'
-        rules['vague'].save()
+        self.rules['vague'].description = 'changed'
+        self.rules['vague'].save()
 
         self.assert_snippets({
             '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], True  ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], True  ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
         })
 
         self.assert_cache_events((
 
             # Rule content changed.
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('set_many', [ CACHE_RULE_LASTMOD_PREFIX, 
+                CACHE_RULE_ALL_LASTMOD_PREFIX]),
             
             # Rule cache miss
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
-                CACHE_RULE_LASTMOD_PREFIX]),
+                CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
 
             # All rules cache miss
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_ALL_PREFIX),
 
             ('set', CACHE_RULE_MATCH_PREFIX),
@@ -530,30 +543,31 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
         ))
 
+    def test_invalidation_on_snippet_change(self):
+        """Exercise cache invalidation on change to a snippet"""
+
         # Change a snippet, which should invalidate cached results for snippets
-        time.sleep(1) # ensure the clock ticks
-        snippets['ever'].name = 'changed'
-        snippets['ever'].save()
+        self.snippets['ever'].name = 'changed'
+        self.snippets['ever'].save()
 
         self.assert_snippets({
             '/9/Waterduck/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['expected'], False ), 
-                ( snippets['ever'], True  ), 
-                ( snippets['never'], False ),
+                ( self.snippets['expected'], False ), 
+                ( self.snippets['ever'], True  ), 
+                ( self.snippets['never'], False ),
             ),
         })
 
         self.assert_cache_events((
 
             # Snippet content changed, bumps rules as well.
-            ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set_many', [CACHE_SNIPPET_LASTMOD_PREFIX, 
+                CACHE_RULE_LASTMOD_PREFIX]),
 
             # Rule cache miss
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX]),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             
             # Snippet cache miss
@@ -563,35 +577,37 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
         ))
 
+    def test_invalidation_with_url_variety(self):
+        """Exercise cache with a variety of URLs resulting in the same snippets"""
+
         # Change a snippet, which should invalidate cached results for snippets
-        time.sleep(1) # ensure the clock ticks
-        snippets['ever'].name = 'changed_again'
-        snippets['ever'].save()
+        self.snippets['ever'].body = 'changed_again'
+        self.snippets['ever'].save()
 
         # Try multiple URLs that result in the same set of matching rules, 
         # should cause cache misses in rules, but not in snippet lookup
-        self.assert_snippets({
-            '/1/Alpha/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['ever'], True  ), 
-            ),
-            '/1/Beta/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
-                ( snippets['ever'], True  ), 
-            ),
-            '/1/Gamma/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
-                ( snippets['ever'], True  ), 
-            ),
-        })
+        for idx in (0,1):
+            self.assert_snippets({
+                '/1/Alpha/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                    ( self.snippets['ever'], True  ), 
+                ),
+                '/1/Beta/9.2/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                    ( self.snippets['ever'], True  ), 
+                ),
+                '/1/Gamma/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
+                    ( self.snippets['ever'], True  ), 
+                ),
+            })
 
         self.assert_cache_events((
 
             # Content changed
-            ('set', CACHE_SNIPPET_LASTMOD_PREFIX),
-            ('set', CACHE_RULE_LASTMOD_PREFIX),
+            ('set_many', [CACHE_SNIPPET_LASTMOD_PREFIX, 
+                CACHE_RULE_LASTMOD_PREFIX]),
 
             # Request #1 - cache miss on rules and snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
@@ -600,21 +616,53 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request #2 - cache miss on rules, but hit on snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #3 - cache miss on rules, but hit on snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get', CACHE_RULE_ALL_PREFIX),
-            ('get', CACHE_RULE_ALL_LASTMOD_PREFIX),
+            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
 
+            # Request #4 - cache hits, all around
+            ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+
+            # Request #5 - cache hits, all around
+            ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+
+            # Request #6 - cache hits, all around
+            ('get', CACHE_RULE_MATCH_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+
         ))
+
+    def test_new_rule_creation(self):
+        """Exercise cache invalidation on new rule creation"""
+
+        new_rule = ClientMatchRule(locale='en-GB')
+        new_rule.save()
+
+        new_snippet = Snippet(body='GB English only!')
+        new_snippet.save()
+        new_snippet.client_match_rules.add(new_rule)
+
+        self.assert_snippets({
+            '/1/Gamma/7.0/xxx/xxx/en-GB/xxx/xxx/default/default/': (
+                ( new_snippet, True  ), 
+            ),
+        })
 
     def assert_cache_events(self, expected_events):
         """Match up a set of expected cache events and prefixes with the cache
@@ -635,11 +683,17 @@ class TestSnippetsCache(HomesnippetsTestCase):
             
             else:
                 prefixes = expected[1]
+                prefixes.sort()
+                if 'get_many' == expected[0]:
+                    result_keys = result[1]
+                elif 'set_many' == expected[0]:
+                    result_keys = result[1].keys()
+                    result_keys.sort()
 
                 for idx2 in range(0, len(prefixes)):
-                    ok_(result[1][idx2].startswith(prefixes[idx2]),
+                    ok_(result_keys[idx2].startswith(prefixes[idx2]),
                         '%s should start with %s' % (
-                            result[1][idx2], expected[1][idx2] ))
+                            result_keys[idx2], prefixes[idx2] ))
 
         result_len = len(self.cache.log)
         eq_(0, result_len,

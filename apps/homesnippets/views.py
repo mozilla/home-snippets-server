@@ -46,7 +46,6 @@ def handler404(request):
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
     return resp
 
-#@cache_control(public=True, max_age=HTTP_MAX_AGE)
 def view_snippets(request, **kwargs):
     """Fetch and render snippets matching URL segment args"""
 
@@ -70,7 +69,6 @@ def view_snippets(request, **kwargs):
     # TODO: bug 606555 - Get ACAO working with about:home?
     resp['Access-Control-Allow-Origin'] = '*' 
     resp['Access-Control-Max-Age'] = max_age
-    #resp['Access-Control-Max-Age'] = HTTP_MAX_AGE
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
 
     return resp
