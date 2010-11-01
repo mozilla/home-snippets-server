@@ -191,9 +191,10 @@ class SnippetManager(models.Manager):
         if time_now is None:
             time_now = datetime.now()
 
+        preview = ( 'preview' in args ) and args['preview']
         include_ids, exclude_ids = \
             ClientMatchRule.objects.find_ids_for_matches(args)
-        snippets = self.find_snippets_for_rule_ids(include_ids, exclude_ids)
+        snippets = self.find_snippets_for_rule_ids(preview, include_ids, exclude_ids)
 
         # Filter for date ranges here, rather than in SQL. 
         #
@@ -207,7 +208,7 @@ class SnippetManager(models.Manager):
 
         return snippets_data
 
-    def find_snippets_for_rule_ids(self, include_ids, exclude_ids):
+    def find_snippets_for_rule_ids(self, preview, include_ids, exclude_ids):
         """Given a set of matching inclusion & exclusion rule IDs, look up the
         corresponding snippets."""
 
@@ -218,9 +219,11 @@ class SnippetManager(models.Manager):
         # constructed below, but we might someday use something other than a DB
         # for persistence.
         cache_key = '%s%s' % ( CACHE_SNIPPET_LOOKUP_PREFIX, hashlib.md5(
-            'include:%s;exclude:%s' % ( 
-                ','.join(include_ids), ','.join(exclude_ids) 
-            )
+            ';'.join('%s:%s' % (k,v) for k,v in dict(
+                include = include_ids,
+                exclude = exclude_ids,
+                preview = preview
+            ).items())
         ).hexdigest() )
         cache_hit = cache.get(cache_key)
 
@@ -248,6 +251,8 @@ class SnippetManager(models.Manager):
             where = [
                 '( homesnippets_snippet.disabled <> 1 )',
             ]
+            if not preview:
+                where.append('( homesnippets_snippet.preview <> 1 )')
             if include_ids:
                 where.append(""" 
                     homesnippets_snippet.id IN (
@@ -302,6 +307,8 @@ class Snippet(models.Model):
     priority = models.IntegerField( _('sort order priority'),
             default=0, blank=True, null=True)
     disabled = models.BooleanField( _('disabled?'),
+            default=False)
+    preview = models.BooleanField( _('preview only?'),
             default=False)
     pub_start = models.DateTimeField( _('display start time'),
             blank=True, null=True) 

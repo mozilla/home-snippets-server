@@ -192,6 +192,7 @@ CREATE TABLE `homesnippets_snippet` (
   `body` longtext NOT NULL,
   `priority` int(11) DEFAULT NULL,
   `disabled` tinyint(1) NOT NULL,
+  `preview` tinyint(1) NOT NULL,
   `pub_start` datetime DEFAULT NULL,
   `pub_end` datetime DEFAULT NULL,
   `created` datetime NOT NULL,

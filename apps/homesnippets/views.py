@@ -46,9 +46,10 @@ def handler404(request):
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
     return resp
 
-def view_snippets(request, preview=False, **kwargs):
+def view_snippets(request, **kwargs):
     """Fetch and render snippets matching URL segment args"""
 
+    preview = kwargs['preview']
     snippets = Snippet.objects.find_snippets_with_match_rules(kwargs)
 
     out = [ snippet['body'] for snippet in snippets ]

@@ -10,12 +10,13 @@ admin.site.register(ClientMatchRule, ClientMatchRuleAdmin)
 class SnippetAdmin(admin.ModelAdmin):
     fields = ( 
         'name', 'body', 
-        'client_match_rules', 'disabled',
+        'client_match_rules', 
+        'preview', 'disabled',
         'priority', 'pub_start', 'pub_end', 
         )
     list_display = ( 
         'name', 
-        'disabled', 
+        'preview', 'disabled',
         'priority', 'pub_start', 'pub_end',
         'modified' 
         )
