@@ -6,7 +6,6 @@
 * Regex tester
     * Throw an URL at it, show whether or not matched
     * In JS? Inline in admin?
-* Preview page with cache-busting snippet view
 * Snippet types
     * Templated rendering of common snippet content patterns
         * Global styles

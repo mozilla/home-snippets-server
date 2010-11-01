@@ -46,7 +46,7 @@ def handler404(request):
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
     return resp
 
-def view_snippets(request, **kwargs):
+def view_snippets(request, preview=False, **kwargs):
     """Fetch and render snippets matching URL segment args"""
 
     snippets = Snippet.objects.find_snippets_with_match_rules(kwargs)
@@ -54,17 +54,22 @@ def view_snippets(request, **kwargs):
     out = [ snippet['body'] for snippet in snippets ]
 
     out.append('<!-- content generated at %s -->' %
-        strftime('%Y-%m-%dT%H:%M:%SZ', gmtime()))
+        ( strftime('%Y-%m-%dT%H:%M:%SZ', gmtime() ) ) )
 
     out_txt = '<div class="snippet_set">%s</div>' % "\n\n".join(out)
 
     resp = HttpResponse(out_txt)
 
-    # HACK: Produce a max-age for the cache with a fuzz factor, so as to
-    # help spread out any thundering herds on frontend cache expiry
-    fuzz = int(HTTP_MAX_AGE * HTTP_MAX_AGE_FUZZ)
-    max_age = HTTP_MAX_AGE + random.randint(-fuzz, fuzz)
-    resp['Cache-Control'] = 'public, max-age=%s' % ( max_age )
+    if preview:
+        # Try to force preview request to be fresh.
+        max_age = 0
+        resp['Cache-Control'] = 'public, must-revalidate, max-age=0'
+    else:
+        # HACK: Produce a max-age for the cache with a fuzz factor, so as to
+        # help spread out any thundering herds on frontend cache expiry
+        fuzz = int(HTTP_MAX_AGE * HTTP_MAX_AGE_FUZZ)
+        max_age = HTTP_MAX_AGE + random.randint(-fuzz, fuzz)
+        resp['Cache-Control'] = 'public, max-age=%s' % ( max_age )
 
     # TODO: bug 606555 - Get ACAO working with about:home?
     resp['Access-Control-Allow-Origin'] = '*' 
@@ -72,4 +77,3 @@ def view_snippets(request, **kwargs):
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
 
     return resp
-
