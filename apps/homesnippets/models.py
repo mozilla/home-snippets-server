@@ -219,11 +219,8 @@ class SnippetManager(models.Manager):
         # constructed below, but we might someday use something other than a DB
         # for persistence.
         cache_key = '%s%s' % ( CACHE_SNIPPET_LOOKUP_PREFIX, hashlib.md5(
-            ';'.join('%s:%s' % (k,v) for k,v in dict(
-                include = include_ids,
-                exclude = exclude_ids,
-                preview = preview
-            ).items())
+            'include:%s;exclude:%s;preview:%s' % (
+                ','.join(include_ids), ','.join(exclude_ids), preview)
         ).hexdigest() )
         cache_hit = cache.get(cache_key)
 
