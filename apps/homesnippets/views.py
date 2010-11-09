@@ -77,4 +77,6 @@ def view_snippets(request, **kwargs):
     resp['Access-Control-Max-Age'] = max_age
     resp['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
 
+    resp['X-FRAME-OPTIONS'] = None
+
     return resp
