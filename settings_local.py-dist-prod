@@ -2,6 +2,9 @@
 from settings import *
 from os.path import abspath, dirname, join
 
+# bug 609957: /admin pages should be served via https:
+SESSION_COOKIE_SECURE = True
+
 DEV = False # Set to False for production
 
 SNIPPET_HTTP_MAX_AGE = 75
