@@ -78,6 +78,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     #'django.middleware.cache.UpdateCacheMiddleware',
+    'homesnippets.middleware.HttpOnlyMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,3 +124,4 @@ CACHE_BACKEND = 'locmem://'
 CACHE_MIDDLEWARE_SECONDS = 3600
 CACHE_MIDDLEWARE_KEY_PREFIX = 'homesnippets'
 
+JAVASCRIPT_READABLE_COOKIES = []
