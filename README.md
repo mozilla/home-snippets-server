@@ -33,6 +33,11 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
         * `./vendor/src/schematic/schematic migrations`
         * Repeat the previous step whenever code is updated
         * Be sure to create numbered SQL migration files under `migration/` whenever you need to change the database.
+        * IMPORTANT:
+            * The migrations include an initial admin user account:
+                * username: admin
+                * password: admin
+            * You should log in using this account ASAP and change the password.
     * `python manage.py runserver`
         
 [virtualenv]: http://pypi.python.org/pypi/virtualenv
