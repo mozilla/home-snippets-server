@@ -8,6 +8,7 @@ admin.autodiscover()
 handler404 = 'homesnippets.views.handler404'
 
 urlpatterns = patterns('',
+    (r'^admin/', include('smuggler.urls')),
     (r'^admin/', include(admin.site.urls)),
     (r'^', include('homesnippets.urls')),
 )
