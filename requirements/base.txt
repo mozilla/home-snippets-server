@@ -3,3 +3,4 @@
 Django==1.2.3
 
 -e git://github.com/semente/django-smuggler.git#egg=django-smuggler
+-e git://github.com/fwenzel/django-mozilla-product-details#egg=django-mozilla-product-details

@@ -4,7 +4,14 @@ from homesnippets.models import Snippet, ClientMatchRule
 
 class ClientMatchRuleAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
-    pass
+    list_display = (
+        'description',
+        'id', 'exclude',
+        'startpage_version', 'name', 'locale',
+        'version', 'appbuildid', 'build_target', 
+        'channel', 'os_version', 'distribution', 'distribution_version',
+        'created', 'modified',
+    )
 
 admin.site.register(ClientMatchRule, ClientMatchRuleAdmin)
 
@@ -17,7 +24,7 @@ class SnippetAdmin(admin.ModelAdmin):
         'priority', 'pub_start', 'pub_end', 
     )
     list_display = ( 
-        'name', 
+        'name', 'id',
         'preview', 'disabled',
         'priority', 'pub_start', 'pub_end',
         'modified' 
