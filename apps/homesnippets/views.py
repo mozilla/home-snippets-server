@@ -52,12 +52,15 @@ def view_snippets(request, **kwargs):
     preview = kwargs['preview']
     snippets = Snippet.objects.find_snippets_with_match_rules(kwargs)
 
-    out = [ snippet['body'] for snippet in snippets ]
+    if len(snippets) == 0:
+        out_txt = ''
+    else:
+        out = [ snippet['body'] for snippet in snippets ]
 
-    out.append('<!-- content generated at %s -->' %
-        ( strftime('%Y-%m-%dT%H:%M:%SZ', gmtime() ) ) )
+        out.append('<!-- content generated at %s -->' %
+            ( strftime('%Y-%m-%dT%H:%M:%SZ', gmtime() ) ) )
 
-    out_txt = '<div class="snippet_set">%s</div>' % "\n\n".join(out)
+        out_txt = '<div class="snippet_set">%s</div>' % "\n\n".join(out)
 
     resp = HttpResponse(out_txt)
 
