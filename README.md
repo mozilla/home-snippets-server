@@ -49,11 +49,11 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
     * `python manage.py test homesnippets -lnose.homesnippets -a\!TODO`
         * This skips tests that may intentionally fail because they represent in-progress features.
 
-### Switch about:home to another server
+## Switch about:home to another server
 
 Install and use this addon:
 
-* https://github.com/lmorchard/home-snippets-switcher
+* <https://github.com/lmorchard/home-snippets-switcher>
 
 This will allow you to change the server used by about:home, and to force a
 refresh. Usually this page only checks for content once per day, but the addon
