@@ -49,13 +49,15 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
     * `python manage.py test homesnippets -lnose.homesnippets -a\!TODO`
         * This skips tests that may intentionally fail because they represent in-progress features.
 
-### Force-refresh about:home
+### Switch about:home to another server
 
-The following bookmarklet may help in forcing about:home to reload snippets from your server:
+Install and use this addon:
 
-    javascript:void(function%20()%20%7BlocalStorage%5B'snippets-last-update'%5D%20%3D%200%3B%20localStorage%5B'snippets'%5D%20%3D%20null%3B%20window.location.reload()%7D())
+* https://github.com/lmorchard/home-snippets-switcher
 
-This code clears the timestamp of the last snippet update, along with the content of the last update.
+This will allow you to change the server used by about:home, and to force a
+refresh. Usually this page only checks for content once per day, but the addon
+will cause another check immediately.
 
 ## Deployment
 
