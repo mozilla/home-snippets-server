@@ -7,6 +7,7 @@ from datetime import datetime
 from time import mktime, gmtime
 from django.conf import settings
 from django.db import models
+from django import forms
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.core.cache import cache
 from django.contrib.sites.models import Site
@@ -307,9 +308,9 @@ class Snippet(models.Model):
             default=False)
     preview = models.BooleanField( _('preview only?'),
             default=False)
-    pub_start = models.DateTimeField( _('display start time'),
+    pub_start = models.DateTimeField( _('start time'),
             blank=True, null=True) 
-    pub_end = models.DateTimeField( _('display end time'),
+    pub_end = models.DateTimeField( _('end time'),
             blank=True, null=True) 
 
     created = models.DateTimeField( _('date created'), 

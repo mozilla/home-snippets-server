@@ -6,6 +6,7 @@
 * Regex tester
     * Throw an URL at it, show whether or not matched
     * In JS? Inline in admin?
+* Start / end time for client match rules?
 * Snippet types
     * Templated rendering of common snippet content patterns
         * Global styles
