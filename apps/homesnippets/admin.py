@@ -39,7 +39,7 @@ class SnippetAdmin(admin.ModelAdmin):
 
     formfield_overrides = {
         models.ManyToManyField: {
-            "widget": forms.widgets.SelectMultiple(attrs={"size":100})
+            "widget": forms.widgets.SelectMultiple(attrs={"size":50})
         }
     }
 
