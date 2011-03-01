@@ -125,7 +125,7 @@ class ClientMatchRule(models.Model):
     modified = models.DateTimeField( _('date last modified'), 
             auto_now=True, blank=False)
 
-    def __str__(self):
+    def __unicode__(self):
         fields = ( 'startpage_version', 'name', 'version', 'appbuildid',
             'build_target', 'locale', 'channel', 'os_version',
             'distribution', 'distribution_version', )
