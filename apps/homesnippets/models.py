@@ -298,7 +298,7 @@ class Snippet(models.Model):
             ClientMatchRule, blank=False)
     
     name = models.CharField( _("short name (only shown to admins)"), 
-            blank=False, max_length=80)
+            blank=False, max_length=255)
     body = models.TextField( _("content body"), 
             blank=False)
 
