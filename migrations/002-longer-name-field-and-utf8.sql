@@ -1,7 +1,7 @@
 --
 -- Increase length of name field to 255 chars; ensure all tables are UTF8
 --
-ALTER TABLE `homesnippets_snippets` MODIFY COLUMN name varchar(255);
+ALTER TABLE `homesnippets_snippet` MODIFY COLUMN name varchar(255);
 
 ALTER TABLE `auth_group` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
 ALTER TABLE `auth_group_permissions` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
