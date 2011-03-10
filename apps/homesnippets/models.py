@@ -130,11 +130,13 @@ class ClientMatchRule(models.Model):
             'build_target', 'locale', 'channel', 'os_version',
             'distribution', 'distribution_version', )
         vals = [ getattr(self, field) or '*' for field in fields ]
-        return '%s (%s /%s)' % (
-            self.description,
-            self.exclude and 'EXCLUDE' or 'INCLUDE', 
-            '/'.join(vals) 
-        )
+        if self.description:
+            return self.description
+        else:
+            return '%s /%s' % (
+                self.exclude and 'EXCLUDE' or 'INCLUDE', 
+                '/'.join(vals) 
+            )
 
     def is_match(self, args):
         is_match = True
