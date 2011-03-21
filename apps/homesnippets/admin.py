@@ -7,8 +7,11 @@ from homesnippets.models import Snippet, ClientMatchRule
 class ClientMatchRuleAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
+    list_per_page = 250
+
     list_display = (
         'description',
+        'related_snippets',
         'exclude',
         'startpage_version', 'name', 'version', 
         'locale',

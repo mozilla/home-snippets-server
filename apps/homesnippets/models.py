@@ -8,6 +8,8 @@ from time import mktime, gmtime
 from django.conf import settings
 from django.db import models
 from django import forms
+from django.core import urlresolvers
+from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.core.cache import cache
 from django.contrib.sites.models import Site
@@ -162,6 +164,24 @@ class ClientMatchRule(models.Model):
 
         return is_match
 
+    def related_snippets(self):
+        """HTML link to snippets covered by this client match rule"""
+        link = '%s?%s' % (
+            urlresolvers.reverse('admin:homesnippets_snippet_changelist', args=[]),
+            'client_match_rules__id__exact=%s' % (self.id)
+        )
+        count = self.snippet_set.count()
+
+        # TODO: Needs l10n? Maybe not a priority for an admin page.
+        return ( 
+            ( (count != 1) and 
+                '<a href="%(link)s" title="Click to list snippets matched by this rule"><strong>%(count)d snippets</strong></a>' or
+                '<a href="%(link)s" title="Click to list snippets matched by this rule"><strong>%(count)d snippet</strong></a>' )
+            % dict(count=count, link=link) 
+        )
+
+    related_snippets.allow_tags = True
+        
 
 def rule_update_lastmods(sender, instance, created=False, **kwargs):
     """On a change to a rule, bump lastmod timestamps for that rule and the set
