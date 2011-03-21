@@ -17,7 +17,7 @@ class ClientMatchRuleAdmin(admin.ModelAdmin):
         'locale',
         'appbuildid', 'build_target', 
         'channel', 'os_version', 'distribution', 'distribution_version',
-        'created', 'modified',
+        'modified',
     )
 
     list_editable = (
