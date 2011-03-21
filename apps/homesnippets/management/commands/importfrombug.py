@@ -168,11 +168,14 @@ class Command(BaseCommand):
                     continue
 
                 meta = self.import_manifest['snippets_content'][english]
+
+                if 'disabled' in meta and meta['disabled']: continue
+
                 meta.update(dict(
                     bug_id = self.bug_id,
                     attachment_description = attachment['description'],
                     english = english,
-                    translated = translated % urllib.quote(meta['placeholder']),
+                    translated = translated % cgi.escape(meta['placeholder']),
                 ))
 
                 # Quick and dirty image-to-data: URL conversion if there's an

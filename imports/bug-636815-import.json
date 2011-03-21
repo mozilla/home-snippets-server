@@ -3,8 +3,8 @@
 
     "rule_defaults": {
         "name": "Firefox",
-        "description": "%(locale)s locale (%(name)s), Firefox v4.*",
-        "version": "/4\\.0.*\/",
+        "description": "%(locale)s locale (%(name)s), Firefox v4.0",
+        "version": "4.0",
         "locale": "%(locale)s",
         "startpage_version": "1"
     },
@@ -18,27 +18,32 @@
 
         "Now that you've got Firefox 4, <a href=\"%s\">learn about all the cool things<\/a> you can do with your new browser.": {
             "placeholder": "http://www.mozilla.com/firefox/central/?WT.mc_id=s2&WT.mc_ev=click",
-            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516413"
+            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516413",
+            "pub_start": "2011-03-22 13:00:00"
         },
         
         "Help us share Firefox 4 with the world. <a href=\"%s\">Be a part of Team Firefox!<\/a>": {
-            "placeholder": "http://glow.mozilla.org/?WT.mc_id=s3&WT.mc_ev=click",
-            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=517003"
+            "placeholder": "http://downloadmap.mozilla.org?WT.mc_id=s3&WT.mc_ev=click",
+            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=517003",
+            "pub_start": "2011-03-22 13:00:00"
         },
         
         "Want to see what the Web is really capable of? <a href=\"%s\">Explore the Web o' Wonder demo gallery<\/a> and prepare to be amazed!": {
             "placeholder": "http://demos.mozilla.org/?WT.mc_id=s4&WT.mc_ev=click" ,
-            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516410"
+            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516410",
+            "pub_start": "2011-03-22 13:00:00"
         },
         
         "Take Firefox 4 anywhere you go! Firefox 4 for Android and Maemo is live and ready for you to enjoy. <a href=\"%s\">Get it now<\/a>.": {
-            "placeholder": "http://www.mozilla.com/mobile?WT.mc_id=s5&WT.mc_ev=click" ,
-            "icon_url_src": "https://bug630722.bugzilla.mozilla.org/attachment.cgi?id=508945"
+            "placeholder": "http://www.mozilla.com/mobile/download/?WT.mc_id=s5&WT.mc_ev=click",
+            "icon_url_src": "https://bug630722.bugzilla.mozilla.org/attachment.cgi?id=508945",
+            "disabled": true
         },
         
         "Celebrate Firefox going mobile with Spark, a free game for Android devices. <a href=\"%s\">Get started<\/a>.": {
             "placeholder": "http://spark.mozilla.org/?WT.mc_id=s6&WT.mc_ev=click" ,
-            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516415"
+            "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516415",
+            "disabled": true
         },
         
         "Firefox 4 is here: new look, more speed, extra awesomeness. <a href=\"%s\">Download today!<\/a>": {
