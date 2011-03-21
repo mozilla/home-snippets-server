@@ -69,7 +69,8 @@ class SnippetAdmin(admin.ModelAdmin):
     )
 
     list_editable = (
-        'preview', 'disabled', 'priority'
+        'preview', 'disabled', 'priority',
+        'pub_start', 'pub_end',
     )
 
     filter_horizontal = ( 'client_match_rules', )
