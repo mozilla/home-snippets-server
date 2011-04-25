@@ -1,0 +1,27 @@
+{
+
+    "bug_id": "651868",
+
+    "rule_defaults": {
+        "name": "Firefox",
+        "description": "%(locale)s locale (%(name)s), Firefox v4.0b*",
+        "version": "\/4\\.0b.*\/",
+        "locale": "%(locale)s",
+        "startpage_version": "1"
+    },
+    
+    "snippet_defaults": {
+        "name": "Bug %(bug_id)s: %(attachment_description)s - %(english)s",
+        "body": "<div class=\"snippet\"><img class=\"icon\" src=\"%(icon_url)s\" /><p>%(translated)s<\/p><\/div>"
+    },
+
+    "snippets_content": {
+
+        "Want to experience the newest innovations, even before they go to beta? <a href=\"%s\">Download Mozilla Firefox Aurora<\/a>, our newest release channel.": {
+            "placeholder": "http://www.mozilla.com/firefox/channel/?WT.mc_id=saurora&WT.mc_ev=click",
+            "icon_url_src": "https://bug650088.bugzilla.mozilla.org/attachment.cgi?id=526719"
+        }
+
+    }
+
+}
