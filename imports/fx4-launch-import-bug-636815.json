@@ -25,7 +25,8 @@
         "Help us share Firefox 4 with the world. <a href=\"%s\">Be a part of Team Firefox!<\/a>": {
             "placeholder": "http://downloadmap.mozilla.org?WT.mc_id=s3&WT.mc_ev=click",
             "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=517003",
-            "pub_start": "2011-03-22 13:00:00"
+            "pub_start": "2011-03-22 13:00:00",
+            "pub_end": "2011-03-29 13:00:00"
         },
         
         "Want to see what the Web is really capable of? <a href=\"%s\">Explore the Web o' Wonder demo gallery<\/a> and prepare to be amazed!": {
@@ -37,13 +38,13 @@
         "Take Firefox 4 anywhere you go! Firefox 4 for Android and Maemo is live and ready for you to enjoy. <a href=\"%s\">Get it now<\/a>.": {
             "placeholder": "http://www.mozilla.com/mobile/download/?WT.mc_id=s5&WT.mc_ev=click",
             "icon_url_src": "https://bug630722.bugzilla.mozilla.org/attachment.cgi?id=508945",
-            "disabled": true
+            "pub_start": "2011-03-29 13:00:00"
         },
         
         "Celebrate Firefox going mobile with Spark, a free game for Android devices. <a href=\"%s\">Get started<\/a>.": {
             "placeholder": "http://spark.mozilla.org/?WT.mc_id=s6&WT.mc_ev=click" ,
             "icon_url_src": "https://bug635095.bugzilla.mozilla.org/attachment.cgi?id=516415",
-            "disabled": true
+            "pub_start": "2011-03-29 13:00:00"
         },
         
         "Firefox 4 is here: new look, more speed, extra awesomeness. <a href=\"%s\">Download today!<\/a>": {
