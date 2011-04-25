@@ -27,6 +27,28 @@ def dump_selected(modeladmin, request, queryset):
 
 dump_selected.short_description = "Dump selected objects as JSON data"
 
+def dump_selected_snippets(modeladmin, request, queryset):
+    """Produce a smuggler dump for a selected set of snippets, along with
+    associated client match rules."""
+    snippets = queryset.all()
+    
+    # Assemble a unique set of client match rules used by selected snippets.
+    rules = dict( )
+    for s in snippets:
+        for rule in s.client_match_rules.all():
+            rules[rule.pk] = rule
+
+    # Combine set of rules and snippets for output
+    objects = rules.values() + list( snippets )
+
+    filename = '%s-%s_%s.%s' % ('homesnippets', 'snippets',
+                                datetime.now().isoformat(), SMUGGLER_FORMAT)
+    response = HttpResponse(mimetype="text/plain")
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return serialize_to_response(objects, response)
+
+dump_selected_snippets.short_description = "Dump selected snippets (and client match rules) as JSON data"
+
 
 class ClientMatchRuleAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
@@ -61,7 +83,7 @@ admin.site.register(ClientMatchRule, ClientMatchRuleAdmin)
 class SnippetAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
-    actions = [ dump_selected ]
+    actions = [ dump_selected_snippets ]
     dump_name = 'snippets'
     
     save_on_top = True
