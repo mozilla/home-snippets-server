@@ -1,6 +1,7 @@
 # Production package requirements
+Django==1.2.3
 
---requirement=base.txt
-
+-e git://github.com/lmorchard/django-smuggler.git#egg=django-smuggler
+-e git://github.com/fwenzel/django-mozilla-product-details#egg=django-mozilla-product-details
 -e git://github.com/jbalogh/schematic.git#egg=schematic
 -e git://github.com/jbalogh/django-multidb-router.git#egg=django-multidb-router
