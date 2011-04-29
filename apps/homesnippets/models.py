@@ -30,7 +30,7 @@ CACHE_SNIPPET_LOOKUP_PREFIX   = 'homesnippets_Snippet_Lookup_'
 
 def _key_from_client(args):
     plain = '|'.join(['%s=%s'%(k,v) for k,v in args.items()])
-    return hashlib.md5(plain).hexdigest()
+    return hashlib.md5(plain.encode('UTF-8')).hexdigest()
 
 
 class ClientMatchRuleManager(models.Manager):
