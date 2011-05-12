@@ -164,7 +164,7 @@ class Command(BaseCommand):
                 idx += 1
 
                 if english not in self.import_manifest['snippets_content']:
-                    print "\t%s BAD ENGLISH: %s" % (idx, english)
+                    print "\t%s UNEXPECTED ENGLISH: %s" % (idx, english)
                     continue
 
                 meta = self.import_manifest['snippets_content'][english]
@@ -174,6 +174,8 @@ class Command(BaseCommand):
                 meta.update(dict(
                     bug_id = self.bug_id,
                     attachment_description = attachment['description'],
+                    locale_code = locale['code'],
+                    locale_name = locale['name'],
                     english = english,
                     translated = translated % cgi.escape(meta['placeholder']),
                 ))

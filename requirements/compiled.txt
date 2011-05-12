@@ -1,0 +1,2 @@
+# Compiled packages, sometimes better installed as OS packages
+mysql-python

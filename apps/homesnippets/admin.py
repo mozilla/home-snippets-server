@@ -1,13 +1,14 @@
 import os
 from datetime import datetime
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django import forms
 from django.db import models
 
 from django.db.models import get_app, get_apps, get_model, get_models
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
+
 from smuggler.settings import SMUGGLER_FORMAT, SMUGGLER_FIXTURE_DIR
 from smuggler.utils import (get_excluded_models_set, get_file_list,
                             save_uploaded_file_on_disk, serialize_to_response,
@@ -49,6 +50,27 @@ def dump_selected_snippets(modeladmin, request, queryset):
 
 dump_selected_snippets.short_description = "Dump selected snippets (and client match rules) as JSON data"
 
+def disable_selected_snippets(modeladmin, request, queryset):
+    cnt = 0
+    for snippet in queryset.all():
+        snippet.disabled = True
+        snippet.save()
+        cnt += 1
+    messages.add_message(request, messages.INFO, 
+            ('%(cnt)d snippet(s) disabled') % dict(cnt=cnt))
+
+disable_selected_snippets.short_description = "Disable selected snippets"
+
+def enable_selected_snippets(modeladmin, request, queryset):
+    cnt = 0
+    for snippet in queryset.all():
+        snippet.disabled = False
+        snippet.save()
+        cnt += 1
+    messages.add_message(request, messages.INFO, 
+            ('%(cnt)d snippet(s) enabled') % dict(cnt=cnt))
+
+enable_selected_snippets.short_description = "Enable selected snippets"
 
 class ClientMatchRuleAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
@@ -83,7 +105,11 @@ admin.site.register(ClientMatchRule, ClientMatchRuleAdmin)
 class SnippetAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
-    actions = [ dump_selected_snippets ]
+    actions = [ 
+        dump_selected_snippets,
+        disable_selected_snippets,
+        enable_selected_snippets,
+    ]
     dump_name = 'snippets'
     
     save_on_top = True
@@ -111,7 +137,7 @@ class SnippetAdmin(admin.ModelAdmin):
     
     list_display = ( 
         'name', 
-        'preview', 'disabled',
+        'disabled',
         'priority', 'pub_start', 'pub_end',
         'modified' 
     )
@@ -121,7 +147,7 @@ class SnippetAdmin(admin.ModelAdmin):
     )
 
     list_editable = (
-        'preview', 'disabled', 'priority',
+        'disabled', 'priority',
         'pub_start', 'pub_end',
     )
 
