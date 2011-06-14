@@ -9,6 +9,10 @@ from django.db.models import get_app, get_apps, get_model, get_models
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 
+from django.utils.encoding import smart_unicode
+from django.utils.safestring import mark_safe
+from django.template.loader import render_to_string
+
 from smuggler.settings import SMUGGLER_FORMAT, SMUGGLER_FIXTURE_DIR
 from smuggler.utils import (get_excluded_models_set, get_file_list,
                             save_uploaded_file_on_disk, serialize_to_response,
@@ -102,6 +106,18 @@ class ClientMatchRuleAdmin(admin.ModelAdmin):
 
 admin.site.register(ClientMatchRule, ClientMatchRuleAdmin)
 
+class SnippetBodyWidget(forms.Textarea):
+    class Media:
+        css = {
+            'all': ('snippetBodyWidget.css',)
+        }
+        js = ('jquery-1.6.1.min.js', 'jquery.easytabs.min.js', 'snippetBodyWidget.js')
+
+    def render(self, name, value, attrs=None):
+        textarea = super(SnippetBodyWidget, self).render(name, value, attrs)
+        widget = render_to_string('snippetBodyWidget.html', {"textarea": textarea})
+        return mark_safe(smart_unicode(widget))
+
 class SnippetAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
@@ -158,5 +174,10 @@ class SnippetAdmin(admin.ModelAdmin):
             "widget": forms.widgets.SelectMultiple(attrs={"size":50})
         }
     }
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.name == 'body':
+            kwargs['widget'] = SnippetBodyWidget
+        return super(SnippetAdmin, self).formfield_for_dbfield(db_field, **kwargs)
 
 admin.site.register(Snippet, SnippetAdmin)
