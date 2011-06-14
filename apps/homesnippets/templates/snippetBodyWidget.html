@@ -1,19 +1,22 @@
-<div id="snippet-body-editor">
-    <ul id="snippet-body-tabs">
-	    <li><a href="#snippet-body-basic">Basic</a></li>
-		<li><a href="#snippet-body-advanced">Advanced</a></li>
+<div id="snippet-editor">
+    <ul id="snippet-tabs">
+	    <li><a href="#snippet-basic">Basic</a></li>
+		<li><a href="#snippet-advanced">Advanced</a></li>
 	</ul>
-	<div id="snippet-body-basic" class="panel-container">
-		<div id="snippet-body-basic-inputs">
-			<label for="snippet-body-icon-url">Icon URL (png only):</label>
-			<input type="text" id="snippet-body-icon-url" />
-			<label for="snippet-body-text">Text:</label>
-			<textarea id="snippet-body-text"></textarea>
+	<div id="snippet-basic" class="panel-container">
+		<div>Snippet Preview:</div>
+		<div id="snippet-preview"></div>
+		<div id="snippet-basic-inputs">
+			<label for="snippet-icon-url">Icon URL (png only):</label>
+			<input type="text" id="snippet-icon-url" />
+			<div>
+				<button type="button" id="snippet-embed-button">Change Icon</button>
+			</div>
+			<label for="snippet-text">Text:</label>
+			<textarea id="snippet-text"></textarea>
 		</div>
-		<p>Snippet Preview:</p>
-		<div id="snippet-body-preview"></div>
 	</div>
-	<div id="snippet-body-advanced" class="panel-container">
+	<div id="snippet-advanced" class="panel-container">
 		{{ textarea }}
 	</div>
 </div>

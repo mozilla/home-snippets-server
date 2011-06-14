@@ -1,28 +1,23 @@
-#snippet-body-editor {
+#snippet-editor {
 	margin-left: 7.2em;
 	padding-left: 30px;
 }
 
-#snippet-body-basic-inputs {
-	float: left;
-	width: 300px;
-}
-
-#snippet-body-basic-inputs label {
+#snippet-basic-inputs label {
 	width: auto;
 	float: none;
 }
 
-#snippet-body-basic-inputs input,
-#snippet-body-basic-inputs textarea {
-	width: 250px;
+#snippet-basic-inputs input,
+#snippet-basic-inputs textarea {
+	width: 624px;
 }
 
-#snippet-body-basic-inputs textarea {
-	height: 100px;
+#snippet-basic-inputs textarea {
+	height: 150px;
 }
 
-#snippet-body-basic:after {
+#snippet-basic:after {
 	content: ".";
 	clear: both;
 	display: block;
@@ -30,41 +25,41 @@
 	visibility: hidden;
 }
 
-#snippet-body-advanced textarea {
+#snippet-advanced textarea {
 	height: 200px;
-	width: 350px;
+	width: 628px;
 }
 
 /* TABS */
-#snippet-body-editor ul {
+#snippet-editor ul {
 	margin: 0;
 	padding: 0;
 }
 
-#snippet-body-editor ul li {
+#snippet-editor ul li {
 	background: #CCCCCC;
 	border: 1px solid #999999;
 	border-bottom: none;
 	display: inline-block;
 }
 
-#snippet-body-editor ul li.active {
+#snippet-editor ul li.active {
 	background: #FFFFFF;
 }
 
-#snippet-body-editor ul li a {
+#snippet-editor ul li a {
 	display: block;
 	padding: 5px;
 	outline: none;
 }
 
-#snippet-body-editor .panel-container {
+#snippet-editor .panel-container {
 	border: 1px solid #999999;
 	padding: 10px;
 }
 
 /* PREVIEW */
-#snippet-body-preview {
+#snippet-preview {
 	padding: 14px;
 	width: 600px;
 	background-image: -moz-linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,.1));
@@ -81,10 +76,10 @@
 	display: inline-block;
 	text-align: center;
 	min-height: 30px;
-	margin: 5px;
+	margin: 10px 0;
 }
 
-#snippet-body-preview:hover {
+#snippet-preview:hover {
   background-color: rgb(255,255,255);
   box-shadow: 0 1px 0 rgba(255,255,255,.8) inset,
               0 -2px 0 rgba(0,0,0,.1) inset,
@@ -94,19 +89,19 @@
               0 2px 4px rgba(0,0,0,.2);
 }
 
-#snippet-body-preview:hover:active {
+#snippet-preview:hover:active {
   background-color: rgb(210,210,210);
   box-shadow: 0 2px 3px rgba(0,0,0,.3) inset,
               0 1px 0 rgba(255,255,255,.5);
 }
 
-#snippet-body-preview p {
+#snippet-preview p {
 	margin: 10px 0px;
 	padding: 0px;
 	font-size: 13px;
 }
 
-#snippet-body-preview img.icon {
+#snippet-preview img.icon {
 	margin: -0.75em 1em 0 0;
 	float: left;
 }
