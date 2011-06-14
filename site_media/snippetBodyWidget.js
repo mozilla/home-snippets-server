@@ -8,7 +8,7 @@ $(function() {
 	function generateSnippet(iconURI) {
 		var snippet = '<div class="snippet">';
 		if (iconURI != '') {
-			snippet += '<img class="icon" src="' + iconURI + '">';
+			snippet += '<img class="icon" src="' + iconURI + '" />';
 		}
 		snippet += '<p>' + snippet_text.val() + '</p></div>';
 
@@ -23,15 +23,18 @@ $(function() {
 		if (preview_icon_url != icon_url.val()) {
 			preview_icon_url = icon_url.val();
 
-			// TODO: Implement icon encoding
-			/*
-			$.getJSON('/base64encode/' + preview_icon_url, function(data) {
-				preview_icon_data = 'data:image/png;base64,' + data['img'];
-				generateSnippet(preview_icon_data);
+			// TODO: Support non-png images
+			$.ajax({
+				url: '/base64encode/' + preview_icon_url,
+				dataType: 'json',
+				error: function() {
+					generateSnippet("");
+				},
+				success: function(data) {
+					preview_icon_data = 'data:image/png;base64,' + data['img'];
+					generateSnippet(preview_icon_data);
+				}
 			});
-			*/
-			preview_icon_data = preview_icon_url;
-			generateSnippet(preview_icon_data);
 		} else {
 			generateSnippet(preview_icon_data);
 		}

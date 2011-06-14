@@ -8,6 +8,11 @@
 	width: 300px;
 }
 
+#snippet-body-basic-inputs label {
+	width: auto;
+	float: none;
+}
+
 #snippet-body-basic-inputs input,
 #snippet-body-basic-inputs textarea {
 	width: 250px;

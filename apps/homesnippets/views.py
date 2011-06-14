@@ -2,14 +2,20 @@
 Views for home snippets server
 """
 import random
+import base64
 from time import time, mktime, gmtime, strftime
+from urllib2 import urlopen, URLError
 
 from django.conf import settings
 
 from django.core.urlresolvers import reverse
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.http import HttpResponseForbidden, HttpResponseNotModified
+
+from django.utils import simplejson
+
+from django.contrib.admin.views.decorators import staff_member_required
 
 from django.template import RequestContext
 
@@ -79,3 +85,17 @@ def view_snippets(request, **kwargs):
     resp['X-FRAME-OPTIONS'] = None
 
     return resp
+
+@staff_member_required
+def base64_encode(request, **kwargs):
+    """Encode a remote image to base64, and output as JSON"""
+
+    url = kwargs['url']
+    try:
+        img_file = urlopen(url)
+        base64_str = base64.encodestring(img_file.read())
+    except (URLError, ValueError):
+        raise Http404
+        
+    return HttpResponse(simplejson.dumps({'img': base64_str}),
+                        mimetype='applications/json')
