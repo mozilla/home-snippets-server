@@ -53,22 +53,6 @@ jQuery(function($) {
 		});
 	}
 
-	// Parse snippet code and fill in basic form with pulled info	
-	var snippet_code = form_textarea.val();
-	if (snippet_code.match(/<!--basic-->/) === null) return;
-	
-	// Be dumb and throw a regex at it
-	var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
-	if (img_matches === null) return;
-	preview_icon_data = img_matches[1];
-
-	var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
-	if (text_matches === null) return;
-
-	var snippet_text = link2wiki(text_matches[1]);
-	snippet_text_input.val(snippet_text);
-	generateAndPreviewSnippet(preview_icon_data, snippet_text);
-
 	// Bind events and do UI
 	$('#snippet-text').bind('change keyup', function() {
 		generateAndPreviewSnippet(preview_icon_data, snippet_text_input.val());
@@ -80,4 +64,28 @@ jQuery(function($) {
 		});
 	});
 	$('#snippet-editor').easytabs();
+
+	
+	// Parse snippet code and fill in basic form with pulled info	
+	(function() {
+		var snippet_code = form_textarea.val();
+		if (snippet_code.match(/<!--basic-->/) === null) {
+			if (snippet_code != "") {
+				$('#snippet-editor').easytabs('select', '#snippet-advanced');
+			}
+			return;
+		}
+		
+		// Be dumb and throw a regex at it
+		var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
+		if (img_matches === null) return;
+		preview_icon_data = img_matches[1];
+
+		var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
+		if (text_matches === null) return;
+
+		var snippet_text = link2wiki(text_matches[1]);
+		snippet_text_input.val(snippet_text);
+		generateAndPreviewSnippet(preview_icon_data, snippet_text);
+	})();
 });
