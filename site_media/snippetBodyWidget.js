@@ -1,11 +1,9 @@
-(function($) {
-$(function() {
-	var icon_url = $("#snippet-icon-url");
-	var snippet_text = $("#snippet-text");
+jQuery(function($) {
+	var icon_url_input = $("#snippet-icon-url");
+	var snippet_text_input = $("#snippet-text");
 	var preview = $("#snippet-preview");
 	var form_textarea = $("#id_body");
 
-	var preview_icon_url = "";
 	var preview_icon_data = "";
 
 	function wiki2link(str) {
@@ -15,59 +13,71 @@ $(function() {
 	function link2wiki(str) {
 		return str.replace(/<a href="(.+)">(.+)<\/a>/, "[$1|$2]");
 	}
-	
-	// Generate snippet code and fill form/preview with it
-	function generateSnippet() {
-		// Add comment to easily identify "basic" snippets
-		var snippet = '<!--basic--><div class="snippet">';
-		if (preview_icon_data != '') {
-			snippet += '<img class="icon" src="' + preview_icon_data + '" />';
-		}
-		snippet += '<p>' + wiki2link(snippet_text.val()) + '</p></div>';
 
+	function previewSnippet(snippet) {
 		form_textarea.val(snippet);
 		preview.html(snippet);
 	}
-
-	function encodeIcon() {
-		// Avoid encoding when we don't need to
-		if (preview_icon_url != icon_url.val()) {
-			// TODO: Support non-png images
-			var image_to_encode = icon_url.val();
-			$.ajax({
-				url: '/base64encode/' + image_to_encode,
-				dataType: 'json',
-				error: function() {
-					alert("Error encoding icon. Please check that the icon URL points to a valid PNG image.");
-				},
-				success: function(data) {
-					preview_icon_url = image_to_encode;
-					preview_icon_data = 'data:image/png;base64,' + data['img'];
-					generateSnippet();
-				}
-			});
+	
+	// Generate snippet code
+	function generateSnippet(icon_uri, text) {
+		// Add comment to easily identify "basic" snippets
+		var snippet = '<!--basic--><div class="snippet">';
+		if (icon_uri != '') {
+			snippet += '<img class="icon" src="' + icon_uri + '" />';
 		}
+		snippet += '<p>' + wiki2link(text) + '</p></div>';
+
+		return snippet;
 	}
 
-	// Parse snippet code and fill in basic form with pulled info
-	(function() {
-		var snippet_code = form_textarea.val();
-		if (snippet_code.match(/<!--basic-->/) === null) return;
-		
-		// Be dumb and throw a regex at it
-		var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
-		if (img_matches === null) return;
-		preview_icon_data = img_matches[1];
+	function generateAndPreviewSnippet(icon_uri, text) {
+		var snippet_code = generateSnippet(icon_uri, text);
+		previewSnippet(snippet_code);
+	}
 
-		var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
-		if (text_matches === null) return;
+	// Sends icon URL to server to encode in base64
+	function encodeIcon(icon_url, successCallback) {
+		// TODO: Support non-png images
+		$.ajax({
+			url: '/base64encode/' + icon_url,
+			dataType: 'json',
+			error: function() {
+				alert("Error encoding icon. Please check that the icon URL points to a valid PNG image.");
+			},
+			success: function(data) {
+				if (typeof successCallback === "function") {
+					successCallback('data:image/png;base64,' + data['img']);
+				}
+			}
+		});
+	}
 
-		snippet_text.val(link2wiki(text_matches[1]));
-		generateSnippet();
-	})();
+	// Parse snippet code and fill in basic form with pulled info	
+	var snippet_code = form_textarea.val();
+	if (snippet_code.match(/<!--basic-->/) === null) return;
+	
+	// Be dumb and throw a regex at it
+	var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
+	if (img_matches === null) return;
+	preview_icon_data = img_matches[1];
 
-	$('#snippet-text').bind('change keyup', generateSnippet);
-	$('#snippet-embed-button').click(encodeIcon);
+	var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
+	if (text_matches === null) return;
+
+	var snippet_text = link2wiki(text_matches[1]);
+	snippet_text_input.val(snippet_text);
+	generateAndPreviewSnippet(preview_icon_data, snippet_text);
+
+	// Bind events and do UI
+	$('#snippet-text').bind('change keyup', function() {
+		generateAndPreviewSnippet(preview_icon_data, snippet_text_input.val());
+	});
+	$('#snippet-embed-button').click(function() {
+		encodeIcon(icon_url_input.val(), function(icon_data) {
+			preview_icon_data = icon_data;
+			generateAndPreviewSnippet(icon_data, snippet_text_input.val());
+		});
+	});
 	$('#snippet-editor').easytabs();
 });
-})(jQuery);
