@@ -1,29 +1,29 @@
 jQuery(function($) {
-	var icon_url_input = $("#snippet-icon-url");
-	var snippet_text_input = $("#snippet-text");
-	var preview = $("#snippet-preview");
-	var form_textarea = $("#id_body");
+	var icon_url_input = $('#snippet-icon-url');
+	var snippet_text_input = $('#snippet-text');
+	var preview = $('#snippet-preview');
+	var form_textarea = $('#id_body');
 
-	var preview_icon_data = "";
+	var preview_icon_data = '';
 
 	function wiki2link(str) {
 		return str.replace(/\[(.+)\|(.+)\]/, '<a href="$1">$2</a>');
 	}
 
 	function link2wiki(str) {
-		return str.replace(/<a href="(.+)">(.+)<\/a>/, "[$1|$2]");
+		return str.replace(/<a href="(.+)">(.+)<\/a>/, '[$1|$2]');
 	}
 
 	function previewSnippet(snippet) {
 		form_textarea.val(snippet);
 		preview.html(snippet);
 	}
-	
+
 	// Generate snippet code
 	function generateSnippet(icon_uri, text) {
 		// Add comment to easily identify "basic" snippets
 		var snippet = '<!--basic--><div class="snippet">';
-		if (icon_uri != '') {
+		if (icon_uri !== '') {
 			snippet += '<img class="icon" src="' + icon_uri + '" />';
 		}
 		snippet += '<p>' + wiki2link(text) + '</p></div>';
@@ -43,10 +43,10 @@ jQuery(function($) {
 			url: '/base64encode/' + icon_url,
 			dataType: 'json',
 			error: function() {
-				alert("Error encoding icon. Please check that the icon URL points to a valid PNG image.");
+				alert('Error encoding icon. Please check that the icon URL points to a valid PNG image.');
 			},
 			success: function(data) {
-				if (typeof successCallback === "function") {
+				if (typeof successCallback === 'function') {
 					successCallback('data:image/png;base64,' + data['img']);
 				}
 			}
@@ -65,17 +65,17 @@ jQuery(function($) {
 	});
 	$('#snippet-editor').easytabs();
 
-	
-	// Parse snippet code and fill in basic form with pulled info	
+
+	// Parse snippet code and fill in basic form with pulled info
 	(function() {
 		var snippet_code = form_textarea.val();
 		if (snippet_code.match(/<!--basic-->/) === null) {
-			if (snippet_code != "") {
+			if (snippet_code != '') {
 				$('#snippet-editor').easytabs('select', '#snippet-advanced');
 			}
 			return;
 		}
-		
+
 		// Be dumb and throw a regex at it
 		var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
 		if (img_matches === null) return;
