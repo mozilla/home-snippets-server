@@ -8,11 +8,12 @@ from urllib2 import urlopen, URLError
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_control
 
+from homesnippets.forms import BulkDateForm
 from homesnippets.models import Snippet
 
 
@@ -22,7 +23,7 @@ DEBUG = getattr(settings, 'DEBUG', False)
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 def index(request):
-    """Render the index page, simulating about:home"""
+    """Render the index page, simulating about:home."""
     return render_to_response('index.html', {},
             context_instance=RequestContext(request))
 
@@ -42,7 +43,7 @@ def handler404(request):
 
 
 def view_snippets(request, **kwargs):
-    """Fetch and render snippets matching URL segment args"""
+    """Fetch and render snippets matching URL segment args."""
 
     preview = kwargs['preview']
     snippets = Snippet.objects.find_snippets_with_match_rules(kwargs)
@@ -79,7 +80,7 @@ def view_snippets(request, **kwargs):
 
 @staff_member_required
 def base64_encode(request, **kwargs):
-    """Encode a remote image to base64, and output as JSON"""
+    """Encode a remote image to base64, and output as JSON."""
 
     url = kwargs['url']
     try:
@@ -90,3 +91,26 @@ def base64_encode(request, **kwargs):
 
     return HttpResponse(json.dumps({'img': base64_str}),
                         mimetype='applications/json')
+
+
+@staff_member_required
+def admin_bulk_date_change(request, **kwargs):
+    """Show a custom form to bulk-change snippet start and end dates."""
+
+    if request.method == 'POST':
+        form = BulkDateForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            snippet_ids = form.cleaned_data['ids'].split(',')
+            snippets = Snippet.objects.filter(id__in=snippet_ids)
+            snippets.update(pub_start=start_date, pub_end=end_date)
+
+            return HttpResponseRedirect('/admin/homesnippets/snippet/')
+    else:
+        form = BulkDateForm(initial=request.GET)
+
+    return render_to_response('adminBulkDateChange.html',
+                              {'form': form},
+                              context_instance=RequestContext(request))

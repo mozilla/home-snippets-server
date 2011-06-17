@@ -2,8 +2,9 @@ from datetime import datetime
 
 from django import forms
 from django.contrib import admin, messages
+from django.core.urlresolvers import reverse
 from django.db import models
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
@@ -74,6 +75,15 @@ def enable_selected_snippets(modeladmin, request, queryset):
 enable_selected_snippets.short_description = "Enable selected snippets"
 
 
+def bulk_edit_dates(modeladmin, request, queryset):
+    selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    url = '%s?ids=%s' % (reverse('admin_bulk_date_change'), ','.join(selected))
+    return HttpResponseRedirect(url)
+
+bulk_edit_dates.short_description = "Edit start and end dates of selected " \
+                                    "snippets"
+
+
 class ClientMatchRuleAdmin(admin.ModelAdmin):
     change_list_template = 'smuggler/change_list.html'
 
@@ -127,6 +137,7 @@ class SnippetAdmin(admin.ModelAdmin):
         dump_selected_snippets,
         disable_selected_snippets,
         enable_selected_snippets,
+        bulk_edit_dates,
     ]
     dump_name = 'snippets'
 
