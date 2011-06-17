@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block content %}
+<h1>{{ _('Change start and end dates') }}</h1>
 <form action="{% url homesnippets.views.admin_bulk_date_change %}" method="post">{% csrf_token %}
   <fieldset class="module aligned">
 	{{ form.as_p }}
