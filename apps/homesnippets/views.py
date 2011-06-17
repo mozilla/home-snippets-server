@@ -13,8 +13,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_control
 
-from homesnippets.models import Snippet
 from homesnippets.forms import BulkDateForm
+from homesnippets.models import Snippet
 
 
 HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
@@ -23,7 +23,7 @@ DEBUG = getattr(settings, 'DEBUG', False)
 
 @cache_control(public=True, max_age=HTTP_MAX_AGE)
 def index(request):
-    """Render the index page, simulating about:home"""
+    """Render the index page, simulating about:home."""
     return render_to_response('index.html', {},
             context_instance=RequestContext(request))
 
@@ -43,7 +43,7 @@ def handler404(request):
 
 
 def view_snippets(request, **kwargs):
-    """Fetch and render snippets matching URL segment args"""
+    """Fetch and render snippets matching URL segment args."""
 
     preview = kwargs['preview']
     snippets = Snippet.objects.find_snippets_with_match_rules(kwargs)
@@ -80,7 +80,7 @@ def view_snippets(request, **kwargs):
 
 @staff_member_required
 def base64_encode(request, **kwargs):
-    """Encode a remote image to base64, and output as JSON"""
+    """Encode a remote image to base64, and output as JSON."""
 
     url = kwargs['url']
     try:
@@ -95,7 +95,7 @@ def base64_encode(request, **kwargs):
 
 @staff_member_required
 def admin_bulk_date_change(request, **kwargs):
-    """Show a custom form to bulk-change snippet start and end dates"""
+    """Show a custom form to bulk-change snippet start and end dates."""
 
     if request.method == 'POST':
         form = BulkDateForm(request.POST)

@@ -1,7 +1,3 @@
-"""
-Form classes
-"""
-
 from django.forms import Form, DateTimeField, DateInput, CharField, widgets
 
 
@@ -14,5 +10,4 @@ class BulkDateForm(Form):
     end_date = DateTimeField(label='End Date',
                              widget=DateInput(attrs={'class': 'datetime'}),
                              required=False)
-    ids = CharField(required=True,
-                    widget=widgets.HiddenInput())
+    ids = CharField(required=True, widget=widgets.HiddenInput())

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django import forms
 from django.contrib import admin, messages
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.loader import render_to_string
@@ -76,8 +77,8 @@ enable_selected_snippets.short_description = "Enable selected snippets"
 
 def bulk_edit_dates(modeladmin, request, queryset):
     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    return HttpResponseRedirect('/admin/bulkDateChange?ids=%s' %
-                                ','.join(selected))
+    url = '%s?ids=%s' % (reverse('admin_bulk_date_change'), ','.join(selected))
+    return HttpResponseRedirect(url)
 
 bulk_edit_dates.short_description = "Edit start and end dates of selected " \
                                     "snippets"
