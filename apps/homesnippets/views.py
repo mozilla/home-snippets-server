@@ -8,12 +8,13 @@ from urllib2 import urlopen, URLError
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views.decorators.cache import cache_control
 
 from homesnippets.models import Snippet
+from homesnippets.forms import BulkDateForm
 
 
 HTTP_MAX_AGE = getattr(settings, 'SNIPPET_HTTP_MAX_AGE', 1)
@@ -90,3 +91,26 @@ def base64_encode(request, **kwargs):
 
     return HttpResponse(json.dumps({'img': base64_str}),
                         mimetype='applications/json')
+
+
+@staff_member_required
+def admin_bulk_date_change(request, **kwargs):
+    """Show a custom form to bulk-change snippet start and end dates"""
+
+    if request.method == 'POST':
+        form = BulkDateForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            snippet_ids = form.cleaned_data['ids'].split(',')
+            snippets = Snippet.objects.filter(id__in=snippet_ids)
+            snippets.update(pub_start=start_date, pub_end=end_date)
+
+            return HttpResponseRedirect('/admin/homesnippets/snippet/')
+    else:
+        form = BulkDateForm(initial=request.GET)
+
+    return render_to_response('adminBulkDateChange.html',
+                              {'form': form},
+                              context_instance=RequestContext(request))

@@ -1,0 +1,22 @@
+{% extends 'admin/base_site.html' %}
+
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/media/css/forms.css" />
+<link rel="stylesheet" type="text/css" href="/site_media/jquery-ui-1.8.13.custom.css" />
+<link rel="stylesheet" type="text/css" href="/site_media/jquery-ui-timepicker-addon.css" />
+<script type="text/javascript" src="/site_media/jquery-1.6.1.min.js"></script>
+<script type="text/javascript" src="/site_media/jquery-ui-1.8.13.custom.min.js"></script>
+<script type="text/javascript" src="/site_media/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/site_media/adminBulkDateChange.js"></script>
+{% endblock %}
+
+{% block content %}
+<form action="{% url homesnippets.views.admin_bulk_date_change %}" method="post">{% csrf_token %}
+  <fieldset class="module aligned">
+	{{ form.as_p }}
+  </fieldset>
+  <div class="submit-row">
+	<input type="submit" value="Change" class="default" />
+  </div>
+</form>
+{% endblock %}
