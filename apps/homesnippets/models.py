@@ -1,19 +1,15 @@
 """
 homesnippets models
 """
-import logging
 import hashlib
 from datetime import datetime
 from time import mktime, gmtime
+
 from django.conf import settings
-from django.db import models
-from django import forms
 from django.core import urlresolvers
-from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
 from django.core.cache import cache
-from django.contrib.sites.models import Site
-from django.contrib.auth.models import User
+from django.db import models
+from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -74,7 +70,7 @@ class ClientMatchRuleManager(models.Manager):
 
     def _cached_all(self):
         """Cached version of self.all(), invalidated by change to any rule."""
-        c_data = cache.get_many([CACHE_RULE_ALL_PREFIX, 
+        c_data = cache.get_many([CACHE_RULE_ALL_PREFIX,
             CACHE_RULE_ALL_LASTMOD_PREFIX])
 
         lastmod   = c_data.get(CACHE_RULE_ALL_LASTMOD_PREFIX, None)
@@ -103,34 +99,34 @@ class ClientMatchRule(models.Model):
     exclude = models.BooleanField( _('exclusion rule?'),
             default=False)
 
-    # browser/components/nsBrowserContentHandler.js:911:    
-    # const SNIPPETS_URL = "http://snippets.mozilla.com/" + STARTPAGE_VERSION + 
+    # browser/components/nsBrowserContentHandler.js:911:
+    # const SNIPPETS_URL = "http://snippets.mozilla.com/" + STARTPAGE_VERSION +
     # "/%NAME%/%VERSION%/%APPBUILDID%/%BUILD_TARGET%/%LOCALE%/%CHANNEL%
     # /%OS_VERSION%/%DISTRIBUTION%/%DISTRIBUTION_VERSION%/";
 
-    startpage_version = models.CharField( _('start page version'), 
+    startpage_version = models.CharField( _('start page version'),
             null=True, blank=True, max_length=64)
-    name = models.CharField( _('product name'), 
+    name = models.CharField( _('product name'),
             null=True, blank=True, max_length=64)
-    version = models.CharField( _('product version'), 
+    version = models.CharField( _('product version'),
             null=True, blank=True, max_length=64)
-    appbuildid = models.CharField( _('app build id'), 
+    appbuildid = models.CharField( _('app build id'),
             null=True, blank=True, max_length=64)
-    build_target = models.CharField( _('build target'), 
+    build_target = models.CharField( _('build target'),
             null=True, blank=True, max_length=64)
-    locale = models.CharField( _('locale'), 
+    locale = models.CharField( _('locale'),
             null=True, blank=True, max_length=64)
-    channel = models.CharField( _('channel'), 
+    channel = models.CharField( _('channel'),
             null=True, blank=True, max_length=64)
-    os_version = models.CharField( _('os version'), 
+    os_version = models.CharField( _('os version'),
             null=True, blank=True, max_length=64)
-    distribution = models.CharField( _('distribution'), 
+    distribution = models.CharField( _('distribution'),
             null=True, blank=True, max_length=64)
-    distribution_version = models.CharField( _('distribution version'), 
+    distribution_version = models.CharField( _('distribution version'),
             null=True, blank=True, max_length=64)
-    created = models.DateTimeField( _('date created'), 
+    created = models.DateTimeField( _('date created'),
             auto_now_add=True, blank=False)
-    modified = models.DateTimeField( _('date last modified'), 
+    modified = models.DateTimeField( _('date last modified'),
             auto_now=True, blank=False)
 
     def __unicode__(self):
@@ -142,17 +138,17 @@ class ClientMatchRule(models.Model):
             return self.description
         else:
             return '%s /%s' % (
-                self.exclude and 'EXCLUDE' or 'INCLUDE', 
-                '/'.join(vals) 
+                self.exclude and 'EXCLUDE' or 'INCLUDE',
+                '/'.join(vals)
             )
 
     def is_match(self, args):
         is_match = True
         for ak,av in args.items():
             mv = getattr(self, ak, None)
-            if not mv: 
+            if not mv:
                 continue
-            
+
             if mv.startswith('/'):
                 # Regex match
                 import re
@@ -179,15 +175,15 @@ class ClientMatchRule(models.Model):
         count = self.snippet_set.count()
 
         # TODO: Needs l10n? Maybe not a priority for an admin page.
-        return ( 
-            ( (count != 1) and 
+        return (
+            ( (count != 1) and
                 '<a href="%(link)s" title="Click to list snippets matched by this rule"><strong>%(count)d snippets</strong></a>' or
                 '<a href="%(link)s" title="Click to list snippets matched by this rule"><strong>%(count)d snippet</strong></a>' )
-            % dict(count=count, link=link) 
+            % dict(count=count, link=link)
         )
 
     related_snippets.allow_tags = True
-        
+
 
 def rule_update_lastmods(sender, instance, created=False, **kwargs):
     """On a change to a rule, bump lastmod timestamps for that rule and the set
@@ -211,10 +207,10 @@ post_delete.connect(rule_update_lastmods, sender=ClientMatchRule)
 class SnippetManager(models.Manager):
 
     def find_snippets_with_match_rules(self, args, time_now=None):
-        """Find snippets data using match rules. 
+        """Find snippets data using match rules.
 
         Returned is a list of dicts with id and body of snippets found, rather
-        than full Snippet model objects. This makes things easier to cache - 
+        than full Snippet model objects. This makes things easier to cache -
         if full snippets are required, try using the id's to look them up.
         """
         if time_now is None:
@@ -225,14 +221,14 @@ class SnippetManager(models.Manager):
             ClientMatchRule.objects.find_ids_for_matches(args)
         snippets = self.find_snippets_for_rule_ids(preview, include_ids, exclude_ids)
 
-        # Filter for date ranges here, rather than in SQL. 
+        # Filter for date ranges here, rather than in SQL.
         #
         # This is a compromise to make snippet match results more cacheable -
         # ie. cached data should only be recalculated in response to content
         # changes, not the passage of time.
-        snippets_data = [ s for s in snippets if ( 
+        snippets_data = [ s for s in snippets if (
             ( not s['pub_start'] or time_now >= s['pub_start'] ) and
-            ( not s['pub_end']   or time_now <  s['pub_end'] ) 
+            ( not s['pub_end']   or time_now <  s['pub_end'] )
         ) ]
 
         return snippets_data
@@ -241,7 +237,7 @@ class SnippetManager(models.Manager):
         """Given a set of matching inclusion & exclusion rule IDs, look up the
         corresponding snippets."""
 
-        if not include_ids and not exclude_ids: 
+        if not include_ids and not exclude_ids:
             return []
 
         # Could base the cache key on the entire text of the SQL query
@@ -269,7 +265,7 @@ class SnippetManager(models.Manager):
         if not cache_hit:
             # No cache hit, look up the snippets associated with rules.
             sql_base = """
-                SELECT homesnippets_snippet.* 
+                SELECT homesnippets_snippet.*
                 FROM homesnippets_snippet
                 WHERE ( %s )
                 ORDER BY priority, pub_start, modified
@@ -280,28 +276,28 @@ class SnippetManager(models.Manager):
             if not preview:
                 where.append('( homesnippets_snippet.preview <> 1 )')
             if include_ids:
-                where.append(""" 
+                where.append("""
                     homesnippets_snippet.id IN (
                         SELECT snippet_id
                         FROM homesnippets_snippet_client_match_rules
                         WHERE clientmatchrule_id IN (%s)
-                    ) 
+                    )
                 """ % ",".join(include_ids))
             if exclude_ids:
-                where.append(""" 
+                where.append("""
                     homesnippets_snippet.id NOT IN (
                         SELECT snippet_id
                         FROM homesnippets_snippet_client_match_rules
                         WHERE clientmatchrule_id IN (%s)
-                    ) 
+                    )
                 """ % ",".join(exclude_ids))
             sql = sql_base % (' AND '.join(where))
 
             # Reduce snippet model objects to more cacheable dicts
             snippet_objs = self.raw(sql)
-            snippets = [ 
+            snippets = [
                 dict(
-                    id=snippet.id, 
+                    id=snippet.id,
                     name=snippet.name,
                     body=snippet.body,
                     pub_start=snippet.pub_start,
@@ -324,10 +320,10 @@ class Snippet(models.Model):
 
     client_match_rules = models.ManyToManyField(
             ClientMatchRule, blank=False)
-    
-    name = models.CharField( _("short name (only shown to admins)"), 
+
+    name = models.CharField( _("short name (only shown to admins)"),
             blank=False, max_length=255)
-    body = models.TextField( _("content body"), 
+    body = models.TextField( _("content body"),
             blank=False)
 
     priority = models.IntegerField( _('sort order priority'),
@@ -337,16 +333,16 @@ class Snippet(models.Model):
     preview = models.BooleanField( _('preview only?'),
             default=False)
     pub_start = models.DateTimeField( _('start time'),
-            blank=True, null=True) 
+            blank=True, null=True)
     pub_end = models.DateTimeField( _('end time'),
-            blank=True, null=True) 
+            blank=True, null=True)
 
-    created = models.DateTimeField( _('date created'), 
+    created = models.DateTimeField( _('date created'),
             auto_now_add=True, blank=False)
-    modified = models.DateTimeField( _('date last modified'), 
+    modified = models.DateTimeField( _('date last modified'),
             auto_now=True, blank=False)
 
-    
+
 def snippet_update_lastmod(sender, instance, **kwargs):
     """On a change to a snippet, bump its cached lastmod timestamp"""
     now = mktime(gmtime())
@@ -359,4 +355,3 @@ def snippet_update_lastmod(sender, instance, **kwargs):
 
 post_save.connect(snippet_update_lastmod, sender=Snippet)
 post_delete.connect(snippet_update_lastmod, sender=Snippet)
-
