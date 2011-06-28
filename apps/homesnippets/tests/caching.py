@@ -205,27 +205,37 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Request 1
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX, 
-                CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX]),
 
             # Request 2
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request 3
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, 
-                CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
         ))
 
@@ -254,6 +264,9 @@ class TestSnippetsCache(HomesnippetsTestCase):
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
                 CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
 
             # All rules cache miss
             ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
@@ -264,8 +277,10 @@ class TestSnippetsCache(HomesnippetsTestCase):
             # Snippet cache miss
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
             ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
-                CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX,
-                CACHE_SNIPPET_LASTMOD_PREFIX]),
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
@@ -294,13 +309,20 @@ class TestSnippetsCache(HomesnippetsTestCase):
 
             # Rule cache miss
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
-            ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_ALL_PREFIX,
+                          CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
-            
+
             # Snippet cache miss
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
         ))
@@ -338,7 +360,10 @@ class TestSnippetsCache(HomesnippetsTestCase):
             ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
             # Snippets looked up & cached for this request only
             ('set', CACHE_SNIPPET_LOOKUP_PREFIX),
 
@@ -347,32 +372,56 @@ class TestSnippetsCache(HomesnippetsTestCase):
             ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #3 - cache miss on rules, but hit on snippets
             ('get', CACHE_RULE_MATCH_PREFIX),
             ('get_many', [CACHE_RULE_ALL_PREFIX, CACHE_RULE_ALL_LASTMOD_PREFIX]),
             ('set', CACHE_RULE_MATCH_PREFIX),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #4 - cache hits, all around
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #5 - cache hits, all around
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
             # Request #6 - cache hits, all around
             ('get', CACHE_RULE_MATCH_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_NEW_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_NEW_LASTMOD_PREFIX]),
             ('get', CACHE_SNIPPET_LOOKUP_PREFIX),
-            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_SNIPPET_LASTMOD_PREFIX]),
+            ('get_many', [CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX, CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_RULE_LASTMOD_PREFIX,
+                          CACHE_SNIPPET_LASTMOD_PREFIX]),
 
         ))
 

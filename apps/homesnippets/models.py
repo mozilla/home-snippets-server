@@ -55,12 +55,18 @@ class ClientMatchRuleManager(models.Manager):
 
         if not cache_hit:
             # Cache miss, so recalculate the results and cache them.
-            matches = [ rule for rule in self._cached_all() 
-                    if rule.is_match(args) ]
-            (include_ids, exclude_ids) = (
-                [str(rule.id) for rule in matches if not rule.exclude],
-                [str(rule.id) for rule in matches if rule.exclude],
-            )
+            rules = self._cached_all()
+            include_ids, exclude_ids = [], []
+
+            for rule in rules:
+                if rule.is_match(args):
+                    if rule.exclude:
+                        exclude_ids.append(str(rule.id))
+                    else:
+                        include_ids.append(str(rule.id))
+                elif not rule.exclude:
+                    exclude_ids.append(str(rule.id))
+
             cache_hit = (mktime(gmtime()), (include_ids, exclude_ids))
             cache.set(cache_key, cache_hit, CACHE_TIMEOUT)
 

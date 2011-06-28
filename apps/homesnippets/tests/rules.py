@@ -241,3 +241,41 @@ class TestSnippetsMatch(HomesnippetsTestCase):
             ),
         })
 
+    def test_unmatched_inclusion_rules(self):
+        """Exercise inclusion rules that don't match"""
+
+        rules = self.setup_rules({
+            'fields': ('name', 'version', 'exclude'),
+            'items': {
+                'firefox': ('Firefox', None, False),
+                '4.0': (None, '4.0', False),
+            }
+        })
+
+        snippets = self.setup_snippets(rules, {
+            'fields': ('name', 'body', 'rules'),
+            'items': {
+                'fire_4.0': ('Firefox 4.0', 'Firefox and 4.0',
+                             (rules['firefox'], rules['4.0'])),
+                'fire': ('Firefox', 'Firefox but not 4.0', (rules['firefox'],)),
+                '4.0': ('4.0', '4.0 but not Firefox', (rules['4.0'],)),
+            }
+        })
+
+        self.assert_snippets({
+            '/1/Firefox/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                (snippets['fire_4.0'], True),
+                (snippets['fire'], True),
+                (snippets['4.0'], True),
+            ),
+            '/1/Firefox/3.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                (snippets['fire_4.0'], False),
+                (snippets['fire'], True),
+                (snippets['4.0'], False),
+            ),
+            '/1/Mudfish/4.0/xxx/xxx/en-US/xxx/xxx/default/default/': (
+                (snippets['fire_4.0'], False),
+                (snippets['fire'], False),
+                (snippets['4.0'], True),
+            ),
+        })
