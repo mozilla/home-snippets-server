@@ -224,7 +224,10 @@ class TestSnippetsMatch(HomesnippetsTestCase):
         })
 
     def test_unmatched_inclusion_rules(self):
-        """Exercise inclusion rules that don't match"""
+        """
+        Test to ensure that if an inclusion rule does not match, the associated
+        snippet is not sent.
+        """
 
         rules = self.setup_rules({
             'fields': ('name', 'version', 'exclude'),

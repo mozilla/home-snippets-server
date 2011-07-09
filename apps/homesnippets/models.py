@@ -32,7 +32,13 @@ def _key_from_client(args):
 class ClientMatchRuleManager(models.Manager):
     """Manager for client match rules, allows filtering against match logic"""
 
-    def find_ids_for_matches(self, args):
+    def find_match_ids_for_request(self, args):
+        """
+        Finds all match rules that affect the given request. Returns two lists
+        containing the rules that will exclude or include snippets in the
+        response.
+        """
+
         cache_key = '%s%s' % (CACHE_RULE_MATCH_PREFIX, _key_from_client(args))
         cache_hit = cache.get(cache_key)
 
@@ -54,6 +60,7 @@ class ClientMatchRuleManager(models.Manager):
             rules = self._cached_all()
             include_ids, exclude_ids = [], []
 
+            # Check every rule
             for rule in rules:
                 if rule.is_match(args):
                     if rule.exclude:
@@ -61,6 +68,9 @@ class ClientMatchRuleManager(models.Manager):
                     else:
                         include_ids.append(str(rule.id))
                 elif not rule.exclude:
+                    # Include rule that doesn't match? Add as an exclude rule
+                    # so that snippets can split required matches into multiple
+                    # rules and combine them together.
                     exclude_ids.append(str(rule.id))
 
             cache_hit = (mktime(gmtime()), (include_ids, exclude_ids))
@@ -218,7 +228,7 @@ class SnippetManager(models.Manager):
 
         preview = ( 'preview' in args ) and args['preview']
         include_ids, exclude_ids = \
-            ClientMatchRule.objects.find_ids_for_matches(args)
+            ClientMatchRule.objects.find_match_ids_for_request(args)
         snippets = self.find_snippets_for_rule_ids(preview, include_ids, exclude_ids)
 
         # Filter for date ranges here, rather than in SQL.
