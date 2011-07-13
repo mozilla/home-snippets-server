@@ -16,7 +16,7 @@ urlpatterns = patterns("homesnippets.views",
         '(?P<distribution>[^/]+)/(?P<distribution_version>[^/]+)/$',
         'view_snippets', name='preview_snippets', kwargs={'preview': True}),
 
-    url(r'^base64encode/(?P<url>.+)$', 'base64_encode', name='base64_encode'),
+    url(r'^base64encode$', 'base64_encode', name='base64_encode'),
     url(r'^admin/bulk_date_change$', 'admin_bulk_date_change',
         name='admin_bulk_date_change'),
     url(r'^$', 'index', name='index'),

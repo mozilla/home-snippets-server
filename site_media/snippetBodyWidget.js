@@ -40,7 +40,7 @@ jQuery(function($) {
 	function encodeIcon(icon_url, successCallback) {
 		// TODO: Support non-png images
 		$.ajax({
-			url: '/base64encode/' + icon_url,
+			url: '/base64encode?url=' + encodeURIComponent(icon_url),
 			dataType: 'json',
 			error: function() {
 				alert('Error encoding icon. Please check that the icon URL points to a valid PNG image.');

@@ -82,11 +82,11 @@ def view_snippets(request, **kwargs):
 def base64_encode(request, **kwargs):
     """Encode a remote image to base64, and output as JSON."""
 
-    url = kwargs['url']
     try:
+        url = request.GET['url']
         img_file = urlopen(url)
         base64_str = base64.encodestring(img_file.read())
-    except (URLError, ValueError):
+    except (URLError, ValueError, KeyError):
         raise Http404
 
     return HttpResponse(json.dumps({'img': base64_str}),
