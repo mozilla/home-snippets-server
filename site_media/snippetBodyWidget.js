@@ -78,8 +78,9 @@ jQuery(function($) {
 
 		// Be dumb and throw a regex at it
 		var img_matches = snippet_code.match(/<img class="icon" src="([\s\S]+)" \/>/);
-		if (img_matches === null) return;
-		preview_icon_data = img_matches[1];
+		if (img_matches !== null) {
+			preview_icon_data = img_matches[1];
+		}
 
 		var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
 		if (text_matches === null) return;
