@@ -10,11 +10,11 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
 * Make sure you have at least Python 2.5
     * I'm using Python 2.6.5 from MacPorts, for what it's worth.
 * Get the source code:
-    * `git clone git://github.com/lmorchard/home-snippets-server.git`
+    * `git clone git://github.com/mozilla/home-snippets-server.git`
     * `cd home-snippets-server`
 * Acquire python library dependencies, using either of these methods
     * Use the vendor library (closer to Mozilla production):
-        * `git clone git://github.com/lmorchard/home-snippets-server-lib.git vendor`
+        * `git clone git://github.com/mozilla/home-snippets-server-lib.git vendor`
     * Use [pip][] and [virtualenv][] (more bleeding edge):
         * `virtualenv --no-site-packages env`
         * `./env/activate`
@@ -53,7 +53,7 @@ See also: <https://bugzilla.mozilla.org/show_bug.cgi?id=592431>
 
 Install and use this addon:
 
-* <https://github.com/lmorchard/home-snippets-switcher>
+* <https://github.com/mozilla/home-snippets-switcher>
 
 This will allow you to change the server used by about:home, and to force a
 refresh. Usually this page only checks for content once per day, but the addon
