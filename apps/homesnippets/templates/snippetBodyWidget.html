@@ -1,4 +1,19 @@
+{% load icanhaz %}
 <div id="snippet-editor">
+  {# ICanHaz Templates #}
+  {% icanhaz %}
+    <script type="text/html" id="snippet_template">
+      <!--basic-->
+      <div class="snippet">
+        [[#icon]]
+        <!--icon:[[ url ]]-->
+        <img class="icon" src="[[ data ]]" />
+        [[/icon]]
+        <p>[[[ text ]]]</p>
+      </div>
+    </script>
+  {% endicanhaz %}
+
   <ul id="snippet-tabs">
 	<li><a href="#snippet-basic">{{ _('Basic') }}</a></li>
 	<li><a href="#snippet-advanced">{{ _('Advanced') }}</a></li>

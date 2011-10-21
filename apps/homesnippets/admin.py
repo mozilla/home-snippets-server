@@ -120,7 +120,9 @@ class SnippetBodyWidget(forms.Textarea):
         css = {
             'all': ('snippetBodyWidget.css',)
         }
-        js = ('jquery-1.6.1.min.js', 'jquery.easytabs.min.js',
+        js = ('jquery-1.6.1.min.js',
+              'jquery.easytabs.min.js',
+              'ICanHaz.js',
               'snippetBodyWidget.js')
 
     def render(self, name, value, attrs=None):
