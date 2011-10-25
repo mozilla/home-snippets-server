@@ -19,8 +19,17 @@ SnippetBodyWidget = function($) {
         return str.replace(/<a href="(.+)">(.+)<\/a>/, '[$1|$2]');
     }
 
-    function updatePreview() {
+    function renderSnippet() {
         var code = ich.snippet_template(snippet, true);
+
+        // Escape ampersands
+        code = code.replace(/&(?!amp;)/, '&amp;');
+
+        return code;
+    }
+
+    function updatePreview() {
+        var code = renderSnippet();
         elems.code.val(code);
         elems.preview.html(code);
     }
