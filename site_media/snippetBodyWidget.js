@@ -92,7 +92,7 @@ SnippetBodyWidget = function($) {
             elems.icon_url.val(snippet.icon.url);
         }
 
-        var text_matches = snippet_code.match(/<p>(.+)<\/p>/);
+        var text_matches = snippet_code.match(/<p>([\s\S]*)<\/p>/);
         if (text_matches !== null) {
             snippet.text = text_matches[1];
             elems.text.val(link2wiki(text_matches[1]));
