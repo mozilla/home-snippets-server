@@ -51,7 +51,8 @@ def view_snippets(request, **kwargs):
     if len(snippets) == 0:
         out_txt = ''
     else:
-        out = [snippet['body'] for snippet in snippets]
+        out = ['<div data-snippet-id="%s">%s</div>' %
+               (snippet['id'], snippet['body']) for snippet in snippets]
 
         out.append('<!-- content generated at %s -->' %
             (strftime('%Y-%m-%dT%H:%M:%SZ', gmtime())))
