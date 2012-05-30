@@ -1,65 +1,5 @@
-#snippet-editor {
-    margin-left: 7.2em;
-    padding-left: 30px;
-}
-
-#snippet-basic-inputs label {
-    width: auto;
-    float: none;
-}
-
-#snippet-basic-inputs input,
-#snippet-basic-inputs textarea {
-    width: 624px;
-}
-
-#snippet-basic-inputs textarea {
-    height: 150px;
-}
-
-#snippet-basic:after {
-    content: ".";
-    clear: both;
-    display: block;
-    height: 0;
-    visibility: hidden;
-}
-
-#snippet-advanced textarea {
-    height: 200px;
-    width: 628px;
-}
-
-/* TABS */
-#snippet-editor ul {
-    margin: 0;
-    padding: 0;
-}
-
-#snippet-editor ul li {
-    background: #CCCCCC;
-    border: 1px solid #999999;
-    border-bottom: none;
-    display: inline-block;
-}
-
-#snippet-editor ul li.active {
-    background: #FFFFFF;
-}
-
-#snippet-editor ul li a {
-    display: block;
-    padding: 5px;
-    outline: none;
-}
-
-#snippet-editor .panel-container {
-    border: 1px solid #999999;
-    padding: 10px;
-}
-
 /* PREVIEW */
-#snippet-preview {
+.snippet-preview {
     padding: 14px;
     width: 600px;
     background-image: -moz-linear-gradient(rgba(255,255,255,.8), rgba(255,255,255,.1));
@@ -79,7 +19,7 @@
     margin: 10px 0;
 }
 
-#snippet-preview:hover {
+.snippet-preview:hover {
   background-color: rgb(255,255,255);
   box-shadow: 0 1px 0 rgba(255,255,255,.8) inset,
               0 -2px 0 rgba(0,0,0,.1) inset,
@@ -89,19 +29,19 @@
               0 2px 4px rgba(0,0,0,.2);
 }
 
-#snippet-preview:hover:active {
+.snippet-preview:hover:active {
   background-color: rgb(210,210,210);
   box-shadow: 0 2px 3px rgba(0,0,0,.3) inset,
               0 1px 0 rgba(255,255,255,.5);
 }
 
-#snippet-preview p {
+.snippet-preview p {
     margin: 10px 0px;
     padding: 0px;
     font-size: 13px;
 }
 
-#snippet-preview img.icon {
+.snippet-preview img.icon {
     margin: -0.75em 1em 0 0;
     float: left;
 }

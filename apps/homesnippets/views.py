@@ -115,3 +115,16 @@ def admin_bulk_date_change(request, **kwargs):
     return render_to_response('adminBulkDateChange.html',
                               {'form': form},
                               context_instance=RequestContext(request))
+
+
+def show_all_snippets(request):
+    """
+    Show a list of all public snippets and their relevant client match rules.
+    """
+    snippets = Snippet.objects.filter(disabled=False, preview=False)
+    fields = ('startpage_version', 'name', 'version', 'appbuildid',
+              'build_target', 'locale', 'channel', 'os_version',
+              'distribution', 'distribution_version')
+    return render_to_response('show_all_snippets.html',
+                              {'snippets': snippets, 'fields': fields},
+                              context_instance=RequestContext(request))

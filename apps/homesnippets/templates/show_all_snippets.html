@@ -1,0 +1,77 @@
+{% load i18n %}
+{% load getattribute %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% trans 'about:home Snippets' %}</title>
+
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/show_all_snippets.css">
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+          <a href="#" class="brand">{% trans 'about:home Snippets' %}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span12">
+          <table class="table table-striped table-bordered">
+            <tbody>
+              {% for snippet in snippets %}
+                <tr>
+                  <td class="preview">
+                    <div class="snippet-preview">
+                      {{ snippet.body|safe }}
+                    </div>
+                  </td>
+                  <td>
+                    <h2>{% trans 'Code' %}</h2>
+                    <pre class="pre-scrollable">{{ snippet.body }}</pre>
+
+                    <h2>{% trans 'Client Match Rules' %}</h2>
+                    <ul>
+                      {% for rule in snippet.client_match_rules.all %}
+                        <li>
+                          {{ rule.description }}
+                          <ul>
+                            <li>
+                              {% if rule.exclude %}
+                                {% trans 'Exclusion Rule' %}
+                              {% else %}
+                                {% trans 'Inclusion Rule' %}
+                              {% endif %}
+                            </li>
+                            {% for field in fields %}
+                              {% with rule|getattribute:field as value %}
+                                {% if value != '' and value != None %}
+                                  <li>
+                                    {% blocktrans %}
+                                      <strong>{{ field }}</strong>: <code>{{ value }}</code>
+                                    {% endblocktrans %}
+                                  </li>
+                                {% endif %}
+                              {% endwith %}
+                            {% endfor %}
+                          </ul>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  </body>
+</html>

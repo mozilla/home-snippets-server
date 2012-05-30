@@ -19,5 +19,6 @@ urlpatterns = patterns("homesnippets.views",
     url(r'^base64encode$', 'base64_encode', name='base64_encode'),
     url(r'^admin/bulk_date_change$', 'admin_bulk_date_change',
         name='admin_bulk_date_change'),
+    url(r'^show_all_snippets$', 'show_all_snippets', name='show_all_snippets'),
     url(r'^$', 'index', name='index'),
 )
