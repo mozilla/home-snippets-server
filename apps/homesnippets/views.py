@@ -117,6 +117,7 @@ def admin_bulk_date_change(request, **kwargs):
                               context_instance=RequestContext(request))
 
 
+@cache_control(public=True, max_age=3600)
 def show_all_snippets(request):
     """
     Show a list of all public snippets and their relevant client match rules.
