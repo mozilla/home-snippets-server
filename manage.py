@@ -3,8 +3,6 @@ import os
 import site
 import sys
 
-# TEMPORARY
-import pdb; pdb.set_trace()
 
 prev_sys_path = list(sys.path)
 
