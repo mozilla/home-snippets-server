@@ -31,15 +31,15 @@ class CacheClass(locmem.CacheClass):
         self.log = []
         self.during_many = False
 
-    def get(self, key, default=None):
+    def get(self, key, *args, **kwargs):
         if not self.during_many:
             self.log.append(('get', key))
-        return locmem.CacheClass.get(self, key, default)
+        return locmem.CacheClass.get(self, key, *args, **kwargs)
 
-    def set(self, key, value, timeout=None):
+    def set(self, key, value, *args, **kwargs):
         if not self.during_many:
             self.log.append(('set', key, value))
-        return locmem.CacheClass.set(self, key, value, timeout)
+        return locmem.CacheClass.set(self, key, value, *args, **kwargs)
 
     def clear(self):
         self.log = []
