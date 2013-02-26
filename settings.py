@@ -126,3 +126,5 @@ CACHE_MIDDLEWARE_SECONDS = 3600
 CACHE_MIDDLEWARE_KEY_PREFIX = 'homesnippets'
 
 JAVASCRIPT_READABLE_COOKIES = []
+
+ALLOWED_HOSTS = ['snippets.stage.mozilla.com', 'snippets.mozilla.com']
