@@ -129,6 +129,6 @@ JAVASCRIPT_READABLE_COOKIES = []
 
 ALLOWED_HOSTS = [
     'snippets.stage.mozilla.com',
-    'snippets.mozilla.com'
+    'snippets.mozilla.com',
     '.allizom.org'
 ]
