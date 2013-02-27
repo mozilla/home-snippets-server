@@ -127,4 +127,8 @@ CACHE_MIDDLEWARE_KEY_PREFIX = 'homesnippets'
 
 JAVASCRIPT_READABLE_COOKIES = []
 
-ALLOWED_HOSTS = ['snippets.stage.mozilla.com', 'snippets.mozilla.com']
+ALLOWED_HOSTS = [
+    'snippets.stage.mozilla.com',
+    'snippets.mozilla.com'
+    '.allizom.org'
+]
