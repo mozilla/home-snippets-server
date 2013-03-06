@@ -7,6 +7,7 @@ werkzeug
 django-debug-toolbar
 django-extensions
 django-devserver
+pyquery
 
 -e git://github.com/cmheisel/nose-xcover.git#egg=nosexcover
 -e git://github.com/jbalogh/django-nose.git#egg=django_nose

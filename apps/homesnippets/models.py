@@ -12,6 +12,29 @@ from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 
+from product_details import product_details
+
+
+ENGLISH_COUNTRY_CHOICES = sorted(
+    [(code, u'{0} ({1})'.format(name, code)) for code, name in
+     product_details.get_regions('en-US').items()],
+    cmp=lambda x, y: cmp(x[1], y[1])
+)
+
+
+class CountryField(models.CharField):
+    description = ('CharField with country settings specific to snippets '
+                   'defaults.')
+
+    def __init__(self, *args, **kwargs):
+        options = {
+            'max_length': 16,
+            'default': u'us',
+            'choices': ENGLISH_COUNTRY_CHOICES
+        }
+        options.update(kwargs)
+        return super(CountryField, self).__init__(*args, **options)
+
 
 CACHE_TIMEOUT = getattr(settings, 'SNIPPET_MODEL_CACHE_TIMEOUT')
 
@@ -310,6 +333,7 @@ class SnippetManager(models.Manager):
                     id=snippet.id,
                     name=snippet.name,
                     body=snippet.body,
+                    country=snippet.country,
                     pub_start=snippet.pub_start,
                     pub_end=snippet.pub_end,
                 )
@@ -351,6 +375,8 @@ class Snippet(models.Model):
             auto_now_add=True, blank=False)
     modified = models.DateTimeField( _('date last modified'),
             auto_now=True, blank=False)
+
+    country = CountryField('Geolocation Country', blank=True, default='')
 
 
 def snippet_update_lastmod(sender, instance, **kwargs):

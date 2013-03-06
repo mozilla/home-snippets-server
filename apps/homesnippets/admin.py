@@ -151,17 +151,13 @@ class SnippetAdmin(admin.ModelAdmin):
         'name', 'body',
     )
 
-    list_filter = (
-        'pub_start',
-        'pub_end',
-        'client_match_rules',
-    )
+    list_filter = ('pub_start', 'pub_end', 'client_match_rules', 'country')
 
     fields = (
         'name', 'body',
         'preview', 'disabled',
         'priority', 'pub_start', 'pub_end',
-        'client_match_rules',
+        'country', 'client_match_rules',
     )
 
     list_per_page = 250
@@ -170,7 +166,7 @@ class SnippetAdmin(admin.ModelAdmin):
         'name',
         'disabled',
         'priority', 'pub_start', 'pub_end',
-        'modified'
+        'country', 'modified',
     )
 
     list_links = (

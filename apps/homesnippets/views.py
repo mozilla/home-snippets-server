@@ -51,8 +51,15 @@ def view_snippets(request, **kwargs):
     if len(snippets) == 0:
         out_txt = ''
     else:
-        out = ['<div data-snippet-id="%s">%s</div>' %
-               (snippet['id'], snippet['body']) for snippet in snippets]
+        out = []
+        for snippet in snippets:
+            attrs = {'data-snippet-id': snippet['id']}
+            if snippet['country']:
+                attrs['data-country'] = snippet['country']
+
+            attrs_string = ' '.join(['%s="%s"' % (key, value) for key, value in
+                                     attrs.items()])
+            out.append('<div %s>%s</div>' % (attrs_string, snippet['body']))
 
         out.append('<!-- content generated at %s -->' %
             (strftime('%Y-%m-%dT%H:%M:%SZ', gmtime())))
