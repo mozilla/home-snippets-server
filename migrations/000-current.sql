@@ -37,7 +37,7 @@ CREATE TABLE `auth_permission` (
   KEY `auth_permission_e4470c6e` (`content_type_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=31 DEFAULT CHARSET=utf8;
 
-INSERT INTO `auth_permission` VALUES 
+INSERT INTO `auth_permission` VALUES
     (1,'Can add permission',1,'add_permission'),
     (2,'Can change permission',1,'change_permission'),
     (3,'Can delete permission',1,'delete_permission'),
@@ -135,7 +135,7 @@ CREATE TABLE `django_content_type` (
   UNIQUE KEY `app_label` (`app_label`,`model`)
 ) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
-INSERT INTO `django_content_type` VALUES 
+INSERT INTO `django_content_type` VALUES
     (1,'permission','auth','permission'),
     (2,'group','auth','group'),
     (3,'user','auth','user'),
@@ -192,7 +192,6 @@ CREATE TABLE `homesnippets_snippet` (
   `body` longtext NOT NULL,
   `priority` int(11) DEFAULT NULL,
   `disabled` tinyint(1) NOT NULL,
-  `preview` tinyint(1) NOT NULL,
   `pub_start` datetime DEFAULT NULL,
   `pub_end` datetime DEFAULT NULL,
   `created` datetime NOT NULL,
