@@ -1,3 +1,3 @@
 [submodule "vendor"]
 	path = vendor
-	url = git://github.com/mozilla/home-snippets-server-lib.git
+	url = https://github.com/mozilla/home-snippets-server-lib.git
