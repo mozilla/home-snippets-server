@@ -3,6 +3,20 @@ import site
 import sys
 from datetime import datetime
 
+try:
+    import newrelic.agent
+except ImportError:
+    newrelic = False
+
+
+# If New Relic was imported successfully, load the configuration.
+if newrelic:
+    newrelic_ini = os.getenv('NEWRELIC_PYTHON_INI_FILE', False)
+    if newrelic_ini:
+        newrelic.agent.initialize(newrelic_ini)
+    else:
+        newrelic = False
+
 # fix markdown.py (and potentially others) using stdout
 sys.stdout = sys.stderr
 
@@ -30,14 +44,11 @@ command.validate()
 # This is what mod_wsgi runs.
 django_app = django.core.handlers.wsgi.WSGIHandler()
 
+
 def application(env, start_response):
     env['wsgi.loaded'] = wsgi_loaded
     return django_app(env, start_response)
 
-# Uncomment this to figure out what's going on with the mod_wsgi environment.
-# def application(env, start_response):
-#     start_response('200 OK', [('Content-Type', 'text/plain')])
-#     return '\n'.join('%r: %r' % item for item in sorted(env.items()))
-
-# vim: ft=python
-
+# Wrap the WSGI application with New Relic if we're able to.
+if newrelic:
+    application = newrelic.agent.wsgi_application()(application)
